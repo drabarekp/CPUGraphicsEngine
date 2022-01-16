@@ -1,0 +1,201 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using MathNet.Numerics.LinearAlgebra;
+using Hazdryx.Drawing;
+using System.Drawing;
+
+using CPUGraphicsEngine.Models;
+using CPUGraphicsEngine.ViewEntities;
+
+namespace CPUGraphicsEngine
+{
+    internal class Presentation
+    {
+        public int width = 400;
+        public int height = 400;
+
+        Matrix<float> projectionMatrix;
+        public Matrix<float> viewMatrix;
+        public Matrix<float> modelMatrix;
+
+        public List<ModelPoint> points = new List<ModelPoint>();
+        public List<ModelTriangle> triangles = new List<ModelTriangle>();
+
+        public List<ViewPoint> viewPoints = new List<ViewPoint>();
+        public List<ViewTriangle> viewTriangles = new List<ViewTriangle>();
+
+        float e = 1 / MathF.Tan(MathF.PI / 3.0f);
+        float n = 1;
+        float f = 100;
+        float a = 1;
+
+        float alpha = 0;
+
+        byte[] backBuffer;
+        float[] depthBuffer;
+
+        public Presentation()
+        {
+            var M = Matrix<float>.Build;
+            var V = Vector<float>.Build;
+
+            backBuffer = new byte[width * height * 4];
+            depthBuffer = new float[width * height];
+
+            float[,] projectionArray =
+                {
+                {e, 0,0,0 },
+                {0, e/a, 0, 0 },
+                {0,0, -(f+n)/(f-n), -(2*f*n)/(f-n) },
+                {0,0,-1,0 }
+                };
+            projectionMatrix = M.DenseOfArray(projectionArray);
+
+            float[,] modelArray =
+            {
+                {MathF.Cos(alpha),-MathF.Sin(alpha), 0,0.1f },
+                {MathF.Sin(alpha), MathF.Cos(alpha), 0,0.2f },
+                {0,0,1,0.3f },
+                {0,0,0,1 }
+            };
+            modelMatrix = M.DenseOfArray(modelArray);
+
+            float[,] viewArray =
+            {
+                {-1,0, 0,0 },
+                {0,0,1,0 },
+                {0,1,0,-5},
+                {0,0,0,1 }
+            };
+            viewMatrix = M.DenseOfArray(viewArray);
+
+            var jsonLoader = new JSONLoader();
+            var pin = jsonLoader.LoadJSONFile();
+            points = pin.points;
+            triangles = pin.triangles;
+
+            foreach(var point in points)
+            {
+                viewPoints.Add(point.viewPoint);
+            }
+            foreach(var tri in triangles)
+            {
+                viewTriangles.Add(tri.GenerateViewTriangle());
+            }
+
+            CalculateScreenPoints();
+            UpdateScreenPosition();
+            Clear(0,0,0,1);
+        }
+
+        public void CalculateScreenPoints()
+        {
+            Matrix<float> transformationMatrix = projectionMatrix * viewMatrix * modelMatrix;
+            for (int i = 0; i < points.Count; i++)
+            {
+                viewPoints[i].SetPosition( points[i].CalculateViewPositon(transformationMatrix));
+            }
+        }
+        public void UpdateViewPoints()
+        {
+            Matrix<float> transformationMatrix = projectionMatrix * viewMatrix * modelMatrix;
+            foreach (var p in points)
+            {
+                p.UpdateViewPoint(transformationMatrix);
+            }
+        }
+        public void UpdateScreenPosition()
+        {
+            foreach (var v in viewPoints)
+                v.UpdateScreenPosition(width, height);
+        }
+
+        public void Render(FastBitmap fastBitmap)
+        {
+            foreach(var p in viewPoints)
+            {
+                p.Draw(fastBitmap, width, height);
+            }
+            foreach(var t in viewTriangles)
+            {
+                Random r = new Random();
+                int idx = r.Next(0, 128);
+                t.DrawTriangle(Color.FromArgb(128, 128, idx), this);
+            }
+            for (int x = 0; x < width; x++)
+                for (int y = 0; y < height; y++)
+                {
+                    Color c;
+                    c = Color.FromArgb(backBuffer[4 * (x + y * width)], backBuffer[4 * (x + y * width) + 1], backBuffer[4 * (x + y * width) + 2]);
+                    fastBitmap.Set(x, y, c); //todo optimisation of color
+                }
+            Clear(0, 0, 0, 1);
+        }
+        public void Render(Graphics g)
+        {
+            foreach (var p in viewPoints)
+            {
+                p.Draw(g, width, height);
+            }
+        }
+        public void Clear(byte r, byte g, byte b, byte a)
+        {
+            // Clearing Back Buffer
+            for (var index = 0; index < backBuffer.Length; index += 4)
+            {
+                // BGRA is used by Windows instead by RGBA in HTML5
+                backBuffer[index] = b;
+                backBuffer[index + 1] = g;
+                backBuffer[index + 2] = r;
+                backBuffer[index + 3] = a;
+            }
+
+            // Clearing Depth Buffer
+            for (var index = 0; index < depthBuffer.Length; index++)
+            {
+                depthBuffer[index] = float.MaxValue;
+            }
+        }
+
+        // Called to put a pixel on screen at a specific X,Y coordinates
+        public void PutPixel(int x, int y, float z, Color color)
+        {
+            // As we have a 1-D Array for our back buffer
+            // we need to know the equivalent cell in 1-D based
+            // on the 2D coordinates on screen
+            var index = (x + y * width);
+            var index4 = index * 4;
+
+            if (depthBuffer[index] < z)
+            {
+                return; // Discard
+            }
+
+            depthBuffer[index] = z;
+
+            backBuffer[index4] = (byte)(color.B * 255);
+            backBuffer[index4 + 1] = (byte)(color.G * 255);
+            backBuffer[index4 + 2] = (byte)(color.R * 255);
+            backBuffer[index4 + 3] = (byte)(color.A * 255);
+        }
+        public void incAlpha()
+        {
+            alpha += 0.1f;
+        }
+        public void calcModelMatrix()
+        {
+            var M = Matrix<float>.Build;
+            float[,] modelArray =
+            {
+                {MathF.Cos(alpha),-MathF.Sin(alpha), 0,0.1f },
+                {MathF.Sin(alpha), MathF.Cos(alpha), 0,0.2f },
+                {0,0,1,0.3f },
+                {0,0,0,1 }
+            };
+            modelMatrix = M.DenseOfArray(modelArray);
+        }
+    }
+}
