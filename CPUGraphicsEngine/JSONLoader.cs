@@ -19,6 +19,27 @@ namespace CPUGraphicsEngine
         public float ndotlc;
         public float ndotld;
     }
+    public struct Vector3
+    {
+        public Vector3(float x, float y, float z)
+        {
+            this.x = x;
+            this.y = y;
+            this.z = z;
+        }
+        public float x;
+        public float y;
+        public float z;
+
+        public static Vector3 Add(Vector3 v1, Vector3 v2)
+        {
+            return new Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
+        }
+        public Vector3 Divide(float arg)
+        {
+            return new Vector3(x / arg, y / arg, z / arg);
+        }
+    }
 
     internal class JSONLoader
     {
@@ -26,7 +47,7 @@ namespace CPUGraphicsEngine
         {
             var meshes = new List<ModelTriangle>();
             string filename;
-            var stream = File.OpenRead("pin-030.babylon");
+            var stream = File.OpenRead("square.babylon");
             string jsonString = "";
             StreamReader reader = new StreamReader(stream);
             while (!reader.EndOfStream)
@@ -69,6 +90,10 @@ namespace CPUGraphicsEngine
             var facesCount = indices.Count / 3;
 
             Pin pin = new Pin();
+            var pointDictionary = new Dictionary<(float, float, float), ModelPoint>();
+            var normalsDictionary = new Dictionary<(float, float, float), HashSet<Vector3>>();
+            var indexArray = new ModelPoint[indices.Count];
+
             for (var index = 0; index < verticesCount; index++)
             {
                 var x = (float)nums[index * 3];
@@ -79,15 +104,49 @@ namespace CPUGraphicsEngine
                 var ny = (float)normals[index * 3 + 1];
                 var nz = (float)normals[index * 3 + 2];
 
-                pin.points.Add(new ModelPoint(x, y, z, nx, ny, nz));
+                ModelPoint point;
+                if (pointDictionary.ContainsKey((x, y, z)))
+                {
+                    point = pointDictionary[(x, y, z)];
+                    normalsDictionary[(x, y, z)].Add(new Vector3(nx, ny, nz));
+                }
+                else
+                {
+                    point = new ModelPoint(x, y, z);
+                    pointDictionary.Add((x, y, z), point);
+                    var list = new HashSet<Vector3>();
+                    list.Add(new Vector3(nx, ny, nz));
+                    normalsDictionary.Add((x, y, z), list);
+                }
+                indexArray[index] = point;
+            }
+                
+
+            foreach(var item in pointDictionary)
+            {
+                var pos = item.Key;
+                var normalsOfThePoint = normalsDictionary[pos];
+                Vector3 vect = new Vector3(0, 0, 0);
+                foreach (Vector3 v in normalsOfThePoint)
+                {
+                    vect = Vector3.Add(vect, v);
+                }
+                vect = vect.Divide(normalsOfThePoint.Count);
+                item.Value.SetNormalVector(vect.x, vect.y, vect.z);
+                item.Value.normal = item.Value.normal.Normalize(2);
+                pin.points.Add(item.Value);
             }
 
+                //TO THIS POINT I HAD REFACTORED
+
+                
+                //pin.points.Add(new ModelPoint(x, y, z, nx, ny, nz));
             for (var index = 0; index < facesCount; index++)
             {
                 var a = (int)indices[index * 3];
                 var b = (int)indices[index * 3 + 1];
                 var c = (int)indices[index * 3 + 2];
-                pin.triangles.Add(new ModelTriangle(pin.points[a], pin.points[b], pin.points[c])); //idk if in triangle should me indexes or point references
+                pin.triangles.Add(new ModelTriangle(indexArray[a], indexArray[b], indexArray[c])); //idk if in triangle should me indexes or point references
             }
 
             //pin.Move(0.0f, 1, 0);

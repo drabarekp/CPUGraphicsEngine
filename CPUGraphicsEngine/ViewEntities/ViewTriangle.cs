@@ -193,7 +193,6 @@ namespace CPUGraphicsEngine.ViewEntities
 
             var dot = faceNormal.DotProduct(lightDirection);
             return Math.Max(0, dot);
-            
         }
 
         void ProcessScanLineGouraud(ScanLineData data, ViewPoint pa, ViewPoint pb, ViewPoint pc, ViewPoint pd, BaseColor color, Presentation presentation)
@@ -210,7 +209,7 @@ namespace CPUGraphicsEngine.ViewEntities
             int ex = (int)Interpolate(pc.X, pd.X, gradient2);
 
             //added by me:
-            if (sx > ex) (sx, ex) = (ex, sx);
+            
 
             //DEBUG
             if(data.ndotla != 0)
@@ -223,6 +222,13 @@ namespace CPUGraphicsEngine.ViewEntities
 
             var snl = Interpolate(data.ndotla, data.ndotlb, gradient1);
             var enl = Interpolate(data.ndotlc, data.ndotld, gradient2);
+
+            if (sx > ex)
+            {
+                (sx, ex) = (ex, sx);
+                (snl, enl) = (enl, snl); //THIS IS HOTFIX, TO REMOVE IN THE FUTURE
+            }
+
 
             if (sx < 0) sx = 0;
             if (ex >= presentation.width) ex = presentation.width;
@@ -267,6 +273,7 @@ namespace CPUGraphicsEngine.ViewEntities
                 p2 = p1;
                 p1 = temp;
             }
+
             Vector<float> lightPosition = lights[0].position;
             var position1in3d = Vector<float>.Build.DenseOfEnumerable(p1.model.position.Take(3));
             var position2in3d = Vector<float>.Build.DenseOfEnumerable(p2.model.position.Take(3));
@@ -291,12 +298,12 @@ namespace CPUGraphicsEngine.ViewEntities
             // http://en.wikipedia.org/wiki/Slope
             // Computing inverse slopes
             if (p2.Y - p1.Y > 0)
-                dP1P2 = (p2.X - p1.X) / (p2.Y - p1.Y);
+                dP1P2 = (float)(p2.X - p1.X) / (float)(p2.Y - p1.Y);
             else
                 dP1P2 = 0;
 
             if (p3.Y - p1.Y > 0)
-                dP1P3 = (p3.X - p1.X) / (p3.Y - p1.Y);
+                dP1P3 = (float)(p3.X - p1.X) / (float)(p3.Y - p1.Y);
             else
                 dP1P3 = 0;
 

@@ -15,6 +15,12 @@ namespace CPUGraphicsEngine.Models
         public Vector<float> normal;
         public ViewPoint viewPoint;
 
+        public ModelPoint(float x, float y, float z)
+        {
+            viewPoint = new ViewPoint(this);
+            var V = Vector<float>.Build;
+            position = V.Dense(new float[] { x, y, z, 1.0f });
+        }
         public ModelPoint(float x, float y, float z, float normalX, float normalY, float normalZ)
         {
             viewPoint = new ViewPoint(this);
@@ -41,6 +47,11 @@ namespace CPUGraphicsEngine.Models
             position[0] += x;
             position[1] += y;
             position[2] += z;
+        }
+        public void SetNormalVector(float nx, float ny, float nz)
+        {
+            var V = Vector<float>.Build;
+            normal = V.Dense(new float[] { nx, ny, nz });
         }
     }
 }

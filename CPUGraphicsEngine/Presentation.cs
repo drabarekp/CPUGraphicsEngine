@@ -43,7 +43,7 @@ namespace CPUGraphicsEngine
         public Presentation()
         {
             lights = new List<LightSource>();
-            lights.Add(new LightSource(10, 10, 10));
+            lights.Add(new LightSource(10, 0, 0));
             camera = new Camera((0, 4, 2), (0, 0, 1));
 
             var M = Matrix<float>.Build;
