@@ -7,10 +7,13 @@ using MathNet.Numerics.LinearAlgebra;
 using Hazdryx.Drawing;
 using System.Drawing;
 
+using CPUGraphicsEngine.Models;
+
 namespace CPUGraphicsEngine.ViewEntities
 {
     internal class ViewPoint
     {
+        public ModelPoint model;
         public int X { get => screenPosition.X; }
         public int Y { get => screenPosition.Y; }
         public float Z { get => position[2]; }
@@ -18,13 +21,14 @@ namespace CPUGraphicsEngine.ViewEntities
         public Vector<float> position;
         
         public (int X, int Y) screenPosition;
-        public ViewPoint()
+        public ViewPoint(ModelPoint model)
         {
-
+            this.model = model;
         }
-        public ViewPoint(Vector<float> position)
+        public ViewPoint(Vector<float> position, ModelPoint model)
         {
             position = this.position;
+            this.model = model;
         }
         public void UpdateScreenPosition(int width, int height)
         {

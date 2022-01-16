@@ -30,8 +30,8 @@ namespace CPUGraphicsEngine
         }
         private FastBitmap Draw()
         {
-            Bitmap bitmap = new Bitmap(400, 400);
-            FastBitmap fastBitmap = new FastBitmap(400, 400);
+            Bitmap bitmap = new Bitmap(800, 800);
+            FastBitmap fastBitmap = new FastBitmap(800, 800);
             presentation.Render(fastBitmap);
             return fastBitmap;
 

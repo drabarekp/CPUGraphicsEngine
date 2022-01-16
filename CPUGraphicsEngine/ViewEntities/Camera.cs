@@ -13,6 +13,12 @@ namespace CPUGraphicsEngine.ViewEntities
         Vector<float> position;
         Vector<float> target;
 
+        public Camera((float X, float Y, float Z) position, (float X, float Y, float Z) target)
+        {
+            var V = Vector<float>.Build;
+            this.position = V.Dense(new float[] { position.X, position.Y, position.Z });
+            this.target = V.Dense(new float[] { target.X, target.Y, target.Z });
+        }
         public Matrix<float> CreateViewMatrix()
         {
             Vector<float> zAxis = position - target;
@@ -29,7 +35,7 @@ namespace CPUGraphicsEngine.ViewEntities
                 {xAxis[2], yAxis[2], zAxis[2], position[2]},
                 {0.0f, 0.0f, 0.0f, 1.0f }
             };
-            return Matrix<float>.Build.DenseOfArray(viewArray);
+            return Matrix<float>.Build.DenseOfArray(viewArray).Inverse();
         }
         private Vector<float> Cross(Vector<float> v1, Vector<float> v2)
         {

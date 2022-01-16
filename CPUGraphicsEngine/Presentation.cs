@@ -14,8 +14,8 @@ namespace CPUGraphicsEngine
 {
     internal class Presentation
     {
-        public int width = 400;
-        public int height = 400;
+        public int width = 800;
+        public int height = 800;
 
         Matrix<float> projectionMatrix;
         public Matrix<float> viewMatrix;
@@ -26,6 +26,9 @@ namespace CPUGraphicsEngine
 
         public List<ViewPoint> viewPoints = new List<ViewPoint>();
         public List<ViewTriangle> viewTriangles = new List<ViewTriangle>();
+
+        Camera camera;
+        List<LightSource> lights;
 
         float e = 1 / MathF.Tan(MathF.PI / 3.0f);
         float n = 1;
@@ -39,6 +42,10 @@ namespace CPUGraphicsEngine
 
         public Presentation()
         {
+            lights = new List<LightSource>();
+            lights.Add(new LightSource(10, 10, 10));
+            camera = new Camera((0, 4, 2), (0, 0, 1));
+
             var M = Matrix<float>.Build;
             var V = Vector<float>.Build;
 
@@ -63,14 +70,15 @@ namespace CPUGraphicsEngine
             };
             modelMatrix = M.DenseOfArray(modelArray);
 
-            float[,] viewArray =
+            /*float[,] viewArray =
             {
                 {-1,0, 0,0 },
                 {0,0,1,0 },
                 {0,1,0,-5},
                 {0,0,0,1 }
             };
-            viewMatrix = M.DenseOfArray(viewArray);
+            viewMatrix = M.DenseOfArray(viewArray);*/
+            viewMatrix = camera.CreateViewMatrix();
 
             var jsonLoader = new JSONLoader();
             var pin = jsonLoader.LoadJSONFile();
@@ -121,9 +129,7 @@ namespace CPUGraphicsEngine
             }
             foreach(var t in viewTriangles)
             {
-                Random r = new Random();
-                int idx = r.Next(0, 128);
-                t.DrawTriangle(Color.FromArgb(128, 128, idx), this);
+                t.DrawTriangleGouraud(t.baseColor, this, lights);
             }
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
@@ -161,7 +167,7 @@ namespace CPUGraphicsEngine
         }
 
         // Called to put a pixel on screen at a specific X,Y coordinates
-        public void PutPixel(int x, int y, float z, Color color)
+        public void PutPixel(int x, int y, float z, BaseColor color)
         {
             // As we have a 1-D Array for our back buffer
             // we need to know the equivalent cell in 1-D based
@@ -176,14 +182,15 @@ namespace CPUGraphicsEngine
 
             depthBuffer[index] = z;
 
-            backBuffer[index4] = (byte)(color.B * 255);
-            backBuffer[index4 + 1] = (byte)(color.G * 255);
-            backBuffer[index4 + 2] = (byte)(color.R * 255);
-            backBuffer[index4 + 3] = (byte)(color.A * 255);
+            backBuffer[index4] = (byte)(color.B);
+            backBuffer[index4 + 1] = (byte)(color.G);
+            backBuffer[index4 + 2] = (byte)(color.R);
+            backBuffer[index4 + 3] = (byte)(color.A);
         }
         public void incAlpha()
         {
             alpha += 0.1f;
+            //lights[0].Move(-100, -100, 0);
         }
         public void calcModelMatrix()
         {

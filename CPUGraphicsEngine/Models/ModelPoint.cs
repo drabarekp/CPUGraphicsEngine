@@ -12,18 +12,20 @@ namespace CPUGraphicsEngine.Models
     internal class ModelPoint
     {
         public Vector<float> position;
+        public Vector<float> normal;
         public ViewPoint viewPoint;
 
-        public ModelPoint(float x, float y, float z)
+        public ModelPoint(float x, float y, float z, float normalX, float normalY, float normalZ)
         {
-            viewPoint = new ViewPoint();
+            viewPoint = new ViewPoint(this);
             var V = Vector<float>.Build;
             position = V.Dense(new float[] { x, y, z, 1.0f });
+            normal = V.Dense(new float[] {normalX , normalY, normalZ });
         }
 
         public ViewPoint CalculateViewPoint(Matrix<float> transformationMatrix)
         {
-            return new ViewPoint(transformationMatrix * position);
+            return new ViewPoint(transformationMatrix * position, this);
         }
         public void UpdateViewPoint(Matrix<float> transformationMatrix)
         {

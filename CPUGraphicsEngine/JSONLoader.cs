@@ -11,6 +11,15 @@ using CPUGraphicsEngine.Models;
 
 namespace CPUGraphicsEngine
 {
+    public struct ScanLineData
+    {
+        public int currentY;
+        public float ndotla;
+        public float ndotlb;
+        public float ndotlc;
+        public float ndotld;
+    }
+
     internal class JSONLoader
     {
         public Pin LoadJSONFile()
@@ -65,7 +74,12 @@ namespace CPUGraphicsEngine
                 var x = (float)nums[index * 3];
                 var y = (float)nums[index * 3 + 1];
                 var z = (float)nums[index * 3 + 2];
-                pin.points.Add(new ModelPoint(x, y, z));
+
+                var nx = (float)normals[index * 3];
+                var ny = (float)normals[index * 3 + 1];
+                var nz = (float)normals[index * 3 + 2];
+
+                pin.points.Add(new ModelPoint(x, y, z, nx, ny, nz));
             }
 
             for (var index = 0; index < facesCount; index++)
@@ -76,7 +90,7 @@ namespace CPUGraphicsEngine
                 pin.triangles.Add(new ModelTriangle(pin.points[a], pin.points[b], pin.points[c])); //idk if in triangle should me indexes or point references
             }
 
-            pin.Move(0.0f, 1, 0);
+            //pin.Move(0.0f, 1, 0);
             return pin;
             
         }
