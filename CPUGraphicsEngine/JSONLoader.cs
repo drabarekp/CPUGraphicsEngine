@@ -47,7 +47,7 @@ namespace CPUGraphicsEngine
         {
             var meshes = new List<ModelTriangle>();
             string filename;
-            var stream = File.OpenRead("square.babylon");
+            var stream = File.OpenRead("pin-030.babylon");
             string jsonString = "";
             StreamReader reader = new StreamReader(stream);
             while (!reader.EndOfStream)

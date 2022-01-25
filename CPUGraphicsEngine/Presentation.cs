@@ -129,7 +129,7 @@ namespace CPUGraphicsEngine
             }
             foreach(var t in viewTriangles)
             {
-                t.DrawTriangleGouraud(t.baseColor, this, lights);
+                t.DrawTrianglePhong(t.baseColor, this, lights);
             }
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
