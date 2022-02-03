@@ -46,5 +46,12 @@ namespace CPUGraphicsEngine.ViewEntities
                 v1[0]*v2[1] - v1[1]*v2[0]});
         }
 
+        public void Move(float x, float y, float z)
+        {
+            position[0] += x;
+            position[1] += y;
+            position[2] += z;
+        }
+
     }
 }

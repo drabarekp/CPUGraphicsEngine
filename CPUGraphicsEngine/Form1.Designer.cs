@@ -30,6 +30,9 @@
         {
             this.mainPicture = new System.Windows.Forms.PictureBox();
             this.basicButton = new System.Windows.Forms.Button();
+            this.startButton = new System.Windows.Forms.Button();
+            this.cancelButton = new System.Windows.Forms.Button();
+            this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)(this.mainPicture)).BeginInit();
             this.SuspendLayout();
             // 
@@ -52,11 +55,39 @@
             this.basicButton.UseVisualStyleBackColor = true;
             this.basicButton.Click += new System.EventHandler(this.basicButton_Click);
             // 
+            // startButton
+            // 
+            this.startButton.Location = new System.Drawing.Point(865, 214);
+            this.startButton.Name = "startButton";
+            this.startButton.Size = new System.Drawing.Size(94, 29);
+            this.startButton.TabIndex = 2;
+            this.startButton.Text = "start task";
+            this.startButton.UseVisualStyleBackColor = true;
+            this.startButton.Click += new System.EventHandler(this.startButton_Click);
+            // 
+            // cancelButton
+            // 
+            this.cancelButton.Location = new System.Drawing.Point(865, 285);
+            this.cancelButton.Name = "cancelButton";
+            this.cancelButton.Size = new System.Drawing.Size(94, 29);
+            this.cancelButton.TabIndex = 3;
+            this.cancelButton.Text = "cancel task";
+            this.cancelButton.UseVisualStyleBackColor = true;
+            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
+            // 
+            // backgroundWorker1
+            // 
+            this.backgroundWorker1.DoWork += new System.ComponentModel.DoWorkEventHandler(this.backgroundWorker1_DoWork);
+            this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
+            this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(982, 953);
+            this.Controls.Add(this.cancelButton);
+            this.Controls.Add(this.startButton);
             this.Controls.Add(this.basicButton);
             this.Controls.Add(this.mainPicture);
             this.Name = "Form1";
@@ -70,5 +101,8 @@
 
         private System.Windows.Forms.PictureBox mainPicture;
         private System.Windows.Forms.Button basicButton;
+        private System.Windows.Forms.Button startButton;
+        private System.Windows.Forms.Button cancelButton;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
     }
 }

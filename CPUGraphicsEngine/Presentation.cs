@@ -123,10 +123,6 @@ namespace CPUGraphicsEngine
 
         public void Render(FastBitmap fastBitmap)
         {
-            foreach(var p in viewPoints)
-            {
-                p.Draw(fastBitmap, width, height);
-            }
             foreach(var t in viewTriangles)
             {
                 t.DrawTrianglePhong(t.baseColor, this, lights);
@@ -142,10 +138,10 @@ namespace CPUGraphicsEngine
         }
         public void Render(Graphics g)
         {
-            foreach (var p in viewPoints)
+            /*foreach (var p in viewPoints)
             {
                 p.Draw(g, width, height);
-            }
+            }*/
         }
         public void Clear(byte r, byte g, byte b, byte a)
         {
@@ -203,6 +199,16 @@ namespace CPUGraphicsEngine
                 {0,0,0,1 }
             };
             modelMatrix = M.DenseOfArray(modelArray);
+        }
+
+        public void Iterate(FastBitmap fastBitmap)
+        {
+            Clear(0, 0, 0, 1);
+            camera.Move(0f, 0, 0.1f);
+            viewMatrix = camera.CreateViewMatrix();
+            UpdateViewPoints();
+            UpdateScreenPosition();
+            Render(fastBitmap);
         }
     }
 }
