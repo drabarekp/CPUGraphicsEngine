@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace CPUGraphicsEngine.Models
 {
@@ -10,6 +11,8 @@ namespace CPUGraphicsEngine.Models
     {
         public List<ModelPoint> points = new List<ModelPoint>();
         public List<ModelTriangle> triangles = new List<ModelTriangle>();
+
+        
 
         public void Render()
         {

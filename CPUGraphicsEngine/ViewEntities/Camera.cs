@@ -10,7 +10,7 @@ namespace CPUGraphicsEngine.ViewEntities
     internal class Camera
     {
         float fov;
-        Vector<float> position;
+        public Vector<float> position;
         Vector<float> target;
 
         public Camera((float X, float Y, float Z) position, (float X, float Y, float Z) target)

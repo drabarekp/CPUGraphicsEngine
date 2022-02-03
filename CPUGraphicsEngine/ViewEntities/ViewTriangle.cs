@@ -111,7 +111,8 @@ namespace CPUGraphicsEngine.ViewEntities
             Vector<float> centerPoint = Vector<float>.Build.DenseOfEnumerable(centerPoint4.Take(3));
             Vector<float> lightPosition = lights[0].position;
 
-            float ndotl = ComputeNDotL(centerPoint, normalFace, lightPosition);
+            //float ndotl = ComputeNDotL(centerPoint, normalFace, lightPosition);
+            float ndotl = PhongIntensity(centerPoint, normalFace, presentation.camera.position, lights);
             var data = new ScanLineData { ndotla = ndotl };
 
             // inverse slopes
@@ -278,10 +279,13 @@ namespace CPUGraphicsEngine.ViewEntities
             var position1in3d = Vector<float>.Build.DenseOfEnumerable(p1.model.position.Take(3));
             var position2in3d = Vector<float>.Build.DenseOfEnumerable(p2.model.position.Take(3));
             var position3in3d = Vector<float>.Build.DenseOfEnumerable(p3.model.position.Take(3));
-
+            /*
             float nl1 = ComputeNDotL(position1in3d, p1.model.normal, lightPosition);
             float nl2 = ComputeNDotL(position2in3d, p2.model.normal, lightPosition);
-            float nl3 = ComputeNDotL(position3in3d, p3.model.normal, lightPosition);
+            float nl3 = ComputeNDotL(position3in3d, p3.model.normal, lightPosition);*/
+            float nl1 = PhongIntensity(position1in3d, p1.model.normal, presentation.camera.position, lights);
+            float nl2 = PhongIntensity(position2in3d, p2.model.normal, presentation.camera.position, lights);
+            float nl3 = PhongIntensity(position3in3d, p3.model.normal, presentation.camera.position, lights);
 
             //DEBUG
             if (nl1 != 0)
@@ -424,8 +428,8 @@ namespace CPUGraphicsEngine.ViewEntities
 
                 position = Vector<float>.Build.DenseOfEnumerable(position.Take(3));
 
-                var ndotl = ComputeNDotL(position, normal, lights[0].position);
-
+                //var ndotl = ComputeNDotL(position, normal, lights[0].position);
+                var ndotl = PhongIntensity(position, normal, presentation.camera.position, lights);
                 presentation.PutPixel(x, y, z, ndotl * color);
             }
         }
@@ -526,6 +530,30 @@ namespace CPUGraphicsEngine.ViewEntities
                     }
                 }
             }
+        }
+
+        private float PhongIntensity(Vector<float> pointPosition, Vector<float> normal, Vector<float> cameraPosition, List<LightSource> lights)
+        {
+            float kd = 0.5f;
+            float ks = 0.5f;
+            float sumIntensity = 0.0f;
+            int alpha = 16;
+
+            Vector<float> cameraDirection = cameraPosition - pointPosition;
+            cameraDirection = cameraDirection.Normalize(2);
+
+            //input vectors are unit vectors
+            foreach (var light in lights)
+            {
+                var lightDirection = light.position - pointPosition;
+                lightDirection = lightDirection.Normalize(2);
+
+                Vector<float> R = 2 * lightDirection.DotProduct(normal) * normal - lightDirection;
+                R = R.Normalize(2);
+                sumIntensity += kd * lightDirection.DotProduct(normal) + ks*MathF.Pow(R.DotProduct(cameraDirection), alpha);
+            }
+
+            return Clamp(sumIntensity, 0, 1);
         }
     }
 }

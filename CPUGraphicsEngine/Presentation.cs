@@ -27,7 +27,7 @@ namespace CPUGraphicsEngine
         public List<ViewPoint> viewPoints = new List<ViewPoint>();
         public List<ViewTriangle> viewTriangles = new List<ViewTriangle>();
 
-        Camera camera;
+        public Camera camera;
         List<LightSource> lights;
 
         float e = 1 / MathF.Tan(MathF.PI / 3.0f);
@@ -125,7 +125,8 @@ namespace CPUGraphicsEngine
         {
             foreach(var t in viewTriangles)
             {
-                t.DrawTrianglePhong(t.baseColor, this, lights);
+                //t.DrawTrianglePhong(t.baseColor, this, lights);
+                t.DrawTriangleFlat(t.baseColor, this, lights);
             }
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
