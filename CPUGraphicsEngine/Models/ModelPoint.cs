@@ -11,6 +11,8 @@ namespace CPUGraphicsEngine.Models
 {
     internal class ModelPoint
     {
+
+        // modelPosition
         public Vector<float> position;
         public Vector<float> normal;
         public ViewPoint viewPoint;
