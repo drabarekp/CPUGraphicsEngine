@@ -33,7 +33,12 @@
             this.startButton = new System.Windows.Forms.Button();
             this.cancelButton = new System.Windows.Forms.Button();
             this.backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
+            this.shadingGroup = new System.Windows.Forms.GroupBox();
+            this.PhongRadio = new System.Windows.Forms.RadioButton();
+            this.gouraudRadio = new System.Windows.Forms.RadioButton();
+            this.flatRadio = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.mainPicture)).BeginInit();
+            this.shadingGroup.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainPicture
@@ -81,11 +86,58 @@
             this.backgroundWorker1.ProgressChanged += new System.ComponentModel.ProgressChangedEventHandler(this.backgroundWorker1_ProgressChanged);
             this.backgroundWorker1.RunWorkerCompleted += new System.ComponentModel.RunWorkerCompletedEventHandler(this.backgroundWorker1_RunWorkerCompleted);
             // 
+            // shadingGroup
+            // 
+            this.shadingGroup.Controls.Add(this.PhongRadio);
+            this.shadingGroup.Controls.Add(this.gouraudRadio);
+            this.shadingGroup.Controls.Add(this.flatRadio);
+            this.shadingGroup.Location = new System.Drawing.Point(856, 414);
+            this.shadingGroup.Name = "shadingGroup";
+            this.shadingGroup.Size = new System.Drawing.Size(250, 125);
+            this.shadingGroup.TabIndex = 4;
+            this.shadingGroup.TabStop = false;
+            this.shadingGroup.Text = "Shading Modes";
+            // 
+            // PhongRadio
+            // 
+            this.PhongRadio.AutoSize = true;
+            this.PhongRadio.Location = new System.Drawing.Point(9, 86);
+            this.PhongRadio.Name = "PhongRadio";
+            this.PhongRadio.Size = new System.Drawing.Size(130, 24);
+            this.PhongRadio.TabIndex = 2;
+            this.PhongRadio.Text = "Phong Shading";
+            this.PhongRadio.UseVisualStyleBackColor = true;
+            this.PhongRadio.CheckedChanged += new System.EventHandler(this.PhongRadio_CheckedChanged);
+            // 
+            // gouraudRadio
+            // 
+            this.gouraudRadio.AutoSize = true;
+            this.gouraudRadio.Location = new System.Drawing.Point(9, 56);
+            this.gouraudRadio.Name = "gouraudRadio";
+            this.gouraudRadio.Size = new System.Drawing.Size(145, 24);
+            this.gouraudRadio.TabIndex = 1;
+            this.gouraudRadio.Text = "Gouraud Shading";
+            this.gouraudRadio.UseVisualStyleBackColor = true;
+            this.gouraudRadio.CheckedChanged += new System.EventHandler(this.gouraudRadio_CheckedChanged);
+            // 
+            // flatRadio
+            // 
+            this.flatRadio.AutoSize = true;
+            this.flatRadio.Location = new System.Drawing.Point(9, 26);
+            this.flatRadio.Name = "flatRadio";
+            this.flatRadio.Size = new System.Drawing.Size(112, 24);
+            this.flatRadio.TabIndex = 0;
+            this.flatRadio.TabStop = true;
+            this.flatRadio.Text = "Flat Shading";
+            this.flatRadio.UseVisualStyleBackColor = true;
+            this.flatRadio.CheckedChanged += new System.EventHandler(this.flatRadio_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(982, 953);
+            this.ClientSize = new System.Drawing.Size(1114, 953);
+            this.Controls.Add(this.shadingGroup);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.startButton);
             this.Controls.Add(this.basicButton);
@@ -93,6 +145,8 @@
             this.Name = "Form1";
             this.Text = "Form1";
             ((System.ComponentModel.ISupportInitialize)(this.mainPicture)).EndInit();
+            this.shadingGroup.ResumeLayout(false);
+            this.shadingGroup.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -104,5 +158,9 @@
         private System.Windows.Forms.Button startButton;
         private System.Windows.Forms.Button cancelButton;
         private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private System.Windows.Forms.GroupBox shadingGroup;
+        private System.Windows.Forms.RadioButton PhongRadio;
+        private System.Windows.Forms.RadioButton gouraudRadio;
+        private System.Windows.Forms.RadioButton flatRadio;
     }
 }

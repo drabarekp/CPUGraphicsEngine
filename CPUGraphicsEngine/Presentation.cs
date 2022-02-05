@@ -9,6 +9,7 @@ using System.Drawing;
 
 using CPUGraphicsEngine.Models;
 using CPUGraphicsEngine.ViewEntities;
+using CPUGraphicsEngine.Utils;
 
 namespace CPUGraphicsEngine
 {
@@ -23,6 +24,7 @@ namespace CPUGraphicsEngine
 
         public List<ModelPoint> points = new List<ModelPoint>();
         public List<ModelTriangle> triangles = new List<ModelTriangle>();
+        public List<Pin> meshes = new List<Pin>();
 
         public List<ViewPoint> viewPoints = new List<ViewPoint>();
         public List<ViewTriangle> viewTriangles = new List<ViewTriangle>();
@@ -39,6 +41,8 @@ namespace CPUGraphicsEngine
 
         byte[] backBuffer;
         float[] depthBuffer;
+
+        ShadingMode shadingMode = ShadingMode.FlatShading;
 
         public Presentation()
         {
@@ -82,6 +86,8 @@ namespace CPUGraphicsEngine
 
             var jsonLoader = new JSONLoader();
             var pin = jsonLoader.LoadJSONFile();
+
+            meshes.Add(pin);
             points = pin.points;
             triangles = pin.triangles;
 
@@ -94,6 +100,8 @@ namespace CPUGraphicsEngine
                 viewTriangles.Add(tri.GenerateViewTriangle());
             }
 
+
+            UpdateWorldPositions();
             CalculateScreenPoints();
             UpdateScreenPosition();
             Clear(0,0,0,1);
@@ -101,7 +109,7 @@ namespace CPUGraphicsEngine
 
         public void CalculateScreenPoints()
         {
-            Matrix<float> transformationMatrix = projectionMatrix * viewMatrix * modelMatrix;
+            Matrix<float> transformationMatrix = projectionMatrix * viewMatrix;
             for (int i = 0; i < points.Count; i++)
             {
                 viewPoints[i].SetPosition( points[i].CalculateViewPositon(transformationMatrix));
@@ -123,11 +131,21 @@ namespace CPUGraphicsEngine
 
         public void Render(FastBitmap fastBitmap)
         {
-            foreach(var t in viewTriangles)
-            {
-                //t.DrawTrianglePhong(t.baseColor, this, lights);
-                t.DrawTriangleFlat(t.baseColor, this, lights);
+
+            switch (shadingMode) {
+                case ShadingMode.FlatShading:
+                    RenderTringlesFlat();
+                    break;
+                case ShadingMode.GouraudShading:
+                    RenderTringlesGouraud();
+                    break;
+                case ShadingMode.PhongShading:
+                    RenderTringlesPhong();
+                    break;
+                default:
+                    break;
             }
+
             for (int x = 0; x < width; x++)
                 for (int y = 0; y < height; y++)
                 {
@@ -136,6 +154,28 @@ namespace CPUGraphicsEngine
                     fastBitmap.Set(x, y, c); //todo optimisation of color
                 }
             Clear(0, 0, 0, 1);
+        }
+
+        private void RenderTringlesFlat()
+        {
+            foreach (var t in viewTriangles)
+            {
+                t.DrawTriangleFlat(t.baseColor, this, lights);
+            }
+        }
+        private void RenderTringlesGouraud()
+        {
+            foreach (var t in viewTriangles)
+            {
+                t.DrawTriangleGouraud(t.baseColor, this, lights);
+            }
+        }
+        private void RenderTringlesPhong()
+        {
+            foreach (var t in viewTriangles)
+            {
+                t.DrawTrianglePhong(t.baseColor, this, lights);
+            }
         }
         public void Render(Graphics g)
         {
@@ -205,11 +245,27 @@ namespace CPUGraphicsEngine
         public void Iterate(FastBitmap fastBitmap)
         {
             Clear(0, 0, 0, 1);
-            camera.Move(0f, 0, 0.1f);
+            meshes[0].Move(0.05f, 0.0f, 0.0f);
+            meshes[0].Rotate(0.03f, 0.03f, 0.03f);
+            //camera.Move(0f, 0, 0.1f);
             viewMatrix = camera.CreateViewMatrix();
+            UpdateWorldPositions();
             UpdateViewPoints();
             UpdateScreenPosition();
             Render(fastBitmap);
+        }
+
+        public void UpdateWorldPositions()
+        {
+            foreach(var mesh in meshes)
+            {
+                mesh.UpdateWorldPositions();
+            }
+        }
+
+        public void ChangeShading(ShadingMode shading)
+        {
+            shadingMode = shading;
         }
     }
 }

@@ -27,7 +27,7 @@ namespace CPUGraphicsEngine
             //jReader.LoadJSONFile();
 
             presentation = new Presentation();
-            
+
             mainPicture.Image = Draw().BaseBitmap;
 
             //mainPicture.Refresh();
@@ -59,7 +59,7 @@ namespace CPUGraphicsEngine
             presentation.UpdateViewPoints();
             presentation.UpdateScreenPosition();
             mainPicture.Image = Draw().BaseBitmap;
-         }
+        }
 
         private void startButton_Click(object sender, EventArgs e)
         {
@@ -112,6 +112,42 @@ namespace CPUGraphicsEngine
 
         private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
+        }
+
+        private void flatRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb != null)
+            {
+                if (rb.Checked)
+                {
+                    presentation.ChangeShading(Utils.ShadingMode.FlatShading);
+                }
+            }
+        }
+
+        private void gouraudRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb != null)
+            {
+                if (rb.Checked)
+                {
+                    presentation.ChangeShading(Utils.ShadingMode.GouraudShading);
+                }
+            }
+        }
+
+        private void PhongRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb != null)
+            {
+                if (rb.Checked)
+                {
+                    presentation.ChangeShading(Utils.ShadingMode.PhongShading);
+                }
+            }
         }
     }
 }

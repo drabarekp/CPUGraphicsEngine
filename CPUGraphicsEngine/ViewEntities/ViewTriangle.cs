@@ -107,7 +107,7 @@ namespace CPUGraphicsEngine.ViewEntities
             }
 
             Vector<float> normalFace = (p1.model.normal + p2.model.normal + p3.model.normal) / 3;
-            Vector<float> centerPoint4 = (p1.model.position + p2.model.position + p3.model.position) / 3;
+            Vector<float> centerPoint4 = (p1.model.worldPosition + p2.model.worldPosition + p3.model.worldPosition) / 3;
             Vector<float> centerPoint = Vector<float>.Build.DenseOfEnumerable(centerPoint4.Take(3));
             Vector<float> lightPosition = lights[0].position;
 
@@ -276,9 +276,9 @@ namespace CPUGraphicsEngine.ViewEntities
             }
 
             Vector<float> lightPosition = lights[0].position;
-            var position1in3d = Vector<float>.Build.DenseOfEnumerable(p1.model.position.Take(3));
-            var position2in3d = Vector<float>.Build.DenseOfEnumerable(p2.model.position.Take(3));
-            var position3in3d = Vector<float>.Build.DenseOfEnumerable(p3.model.position.Take(3));
+            var position1in3d = Vector<float>.Build.DenseOfEnumerable(p1.model.worldPosition.Take(3));
+            var position2in3d = Vector<float>.Build.DenseOfEnumerable(p2.model.worldPosition.Take(3));
+            var position3in3d = Vector<float>.Build.DenseOfEnumerable(p3.model.worldPosition.Take(3));
             /*
             float nl1 = ComputeNDotL(position1in3d, p1.model.normal, lightPosition);
             float nl2 = ComputeNDotL(position2in3d, p2.model.normal, lightPosition);
@@ -414,8 +414,8 @@ namespace CPUGraphicsEngine.ViewEntities
             var normalS = (1 - gradient1) * pa.model.normal + (gradient1) * pb.model.normal;
             var normalE = (1 - gradient2) * pc.model.normal + (gradient2) * pd.model.normal;
 
-            var positionS = (1 - gradient1) * pa.model.position + (gradient1) * pb.model.position;
-            var positionE = (1 - gradient2) * pc.model.position + (gradient2) * pd.model.position;
+            var positionS = (1 - gradient1) * pa.model.worldPosition + (gradient1) * pb.model.worldPosition;
+            var positionE = (1 - gradient2) * pc.model.worldPosition + (gradient2) * pd.model.worldPosition;
 
             // drawing a line from left (sx) to right (ex) 
             for (var x = sx; x < ex; x++)

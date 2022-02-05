@@ -18,17 +18,23 @@ namespace CPUGraphicsEngine.Models
         float zAngle = 0.0f;
         float scaleFactor = 1.0f;
 
-        public void Render()
+        public Pin()
         {
-
+            position = Vector<float>.Build.DenseOfArray(new float[3] { 0.0f, 0.0f, 0.0f });
         }
 
         public void Move(float x, float y, float z)
         {
-            foreach(var point in points)
-            {
-                point.Move(x, y, z);
-            }
+            position[0] += x;
+            position[1] += y;
+            position[2] += z;
+        }
+
+        public void Rotate(float xAxisRotation, float yAxisRotation, float zAxisRotation)
+        {
+            xAngle += xAxisRotation;
+            yAngle += yAxisRotation;
+            zAngle += zAxisRotation;
         }
 
         Matrix<float> GetModelMatrix()
@@ -82,7 +88,15 @@ namespace CPUGraphicsEngine.Models
             var scallingMatrix = M.DenseOfArray(scalling);
 
             return translationMatrix * xRotationMatrix * yRotationMatrix* zRotationMatrix * scallingMatrix;
+        }
 
+        public void UpdateWorldPositions()
+        {
+            var modelMatrix = GetModelMatrix();
+            foreach(var point in this.points)
+            {
+                point.UpdateWorldPosition(modelMatrix);
+            }
         }
 
     }
