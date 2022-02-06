@@ -45,14 +45,14 @@
             // 
             this.mainPicture.Location = new System.Drawing.Point(0, 0);
             this.mainPicture.Name = "mainPicture";
-            this.mainPicture.Size = new System.Drawing.Size(850, 850);
+            this.mainPicture.Size = new System.Drawing.Size(1211, 850);
             this.mainPicture.TabIndex = 0;
             this.mainPicture.TabStop = false;
             this.mainPicture.Paint += new System.Windows.Forms.PaintEventHandler(this.mainPicture_Paint);
             // 
             // basicButton
             // 
-            this.basicButton.Location = new System.Drawing.Point(865, 130);
+            this.basicButton.Location = new System.Drawing.Point(1310, 238);
             this.basicButton.Name = "basicButton";
             this.basicButton.Size = new System.Drawing.Size(94, 29);
             this.basicButton.TabIndex = 1;
@@ -62,7 +62,7 @@
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(865, 214);
+            this.startButton.Location = new System.Drawing.Point(1256, 322);
             this.startButton.Name = "startButton";
             this.startButton.Size = new System.Drawing.Size(94, 29);
             this.startButton.TabIndex = 2;
@@ -72,7 +72,7 @@
             // 
             // cancelButton
             // 
-            this.cancelButton.Location = new System.Drawing.Point(865, 285);
+            this.cancelButton.Location = new System.Drawing.Point(1376, 322);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(94, 29);
             this.cancelButton.TabIndex = 3;
@@ -91,7 +91,7 @@
             this.shadingGroup.Controls.Add(this.PhongRadio);
             this.shadingGroup.Controls.Add(this.gouraudRadio);
             this.shadingGroup.Controls.Add(this.flatRadio);
-            this.shadingGroup.Location = new System.Drawing.Point(856, 414);
+            this.shadingGroup.Location = new System.Drawing.Point(1229, 431);
             this.shadingGroup.Name = "shadingGroup";
             this.shadingGroup.Size = new System.Drawing.Size(250, 125);
             this.shadingGroup.TabIndex = 4;
@@ -136,7 +136,7 @@
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(1114, 953);
+            this.ClientSize = new System.Drawing.Size(1482, 953);
             this.Controls.Add(this.shadingGroup);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.startButton);

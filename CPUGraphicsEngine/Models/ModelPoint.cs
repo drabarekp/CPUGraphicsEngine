@@ -15,7 +15,8 @@ namespace CPUGraphicsEngine.Models
         // modelPosition
         public Vector<float> modelPosition;
         public Vector<float> worldPosition;
-        public Vector<float> normal;
+        public Vector<float> modelNormal { get; private set; }
+        public Vector<float> worldNormal { get; private set; }
         public ViewPoint viewPoint;
 
         public ModelPoint(float x, float y, float z)
@@ -29,7 +30,7 @@ namespace CPUGraphicsEngine.Models
             viewPoint = new ViewPoint(this);
             var V = Vector<float>.Build;
             modelPosition = V.Dense(new float[] { x, y, z, 1.0f });
-            normal = V.Dense(new float[] {normalX , normalY, normalZ });
+            worldNormal = V.Dense(new float[] {normalX , normalY, normalZ });
         }
 
         public ViewPoint CalculateViewPoint(Matrix<float> transformationMatrix)
@@ -43,22 +44,18 @@ namespace CPUGraphicsEngine.Models
         public void UpdateWorldPosition(Matrix<float> modelMatrix)
         {
             worldPosition = modelMatrix * modelPosition;
+            worldNormal = Vector<float>.Build.DenseOfEnumerable((modelMatrix * modelNormal).Take(3));
         }
         public Vector<float> CalculateViewPositon(Matrix<float> transformationMatrix)
         {
             return transformationMatrix * worldPosition;
         }
 
-        public void Move(float x, float y, float z)
-        {
-            worldPosition[0] += x;
-            worldPosition[1] += y;
-            worldPosition[2] += z;
-        }
         public void SetNormalVector(float nx, float ny, float nz)
         {
             var V = Vector<float>.Build;
-            normal = V.Dense(new float[] { nx, ny, nz });
+            modelNormal = V.Dense(new float[] { nx, ny, nz, 0.0f });
+            modelNormal = modelNormal.Normalize(2);
         }
     }
 }

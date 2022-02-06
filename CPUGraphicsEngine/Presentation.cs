@@ -32,7 +32,7 @@ namespace CPUGraphicsEngine
         public Camera camera;
         List<LightSource> lights;
 
-        float e = 1 / MathF.Tan(MathF.PI / 3.0f);
+        float e = 1 / MathF.Tan(MathF.PI / 40.0f);
         float n = 1;
         float f = 100;
         float a = 1;
@@ -44,11 +44,17 @@ namespace CPUGraphicsEngine
 
         ShadingMode shadingMode = ShadingMode.FlatShading;
 
-        public Presentation()
+        public Presentation(int sizeX, int sizeY)
         {
+            width = sizeX;
+            height = sizeY;
+
             lights = new List<LightSource>();
             lights.Add(new LightSource(10, 0, 0));
-            camera = new Camera((0, 4, 2), (0, 0, 1));
+            lights.Add(new LightSource(0, 0, -10));
+            lights.Add(new LightSource(10, -10, 10));
+
+            camera = new Camera((100, 0, 0), (0, 0, 0));
 
             var M = Matrix<float>.Build;
             var V = Vector<float>.Build;
@@ -85,21 +91,14 @@ namespace CPUGraphicsEngine
             viewMatrix = camera.CreateViewMatrix();
 
             var jsonLoader = new JSONLoader();
-            var pin = jsonLoader.LoadJSONFile();
+            var pin = jsonLoader.LoadPin(Color.Red, new Vector3(0.5f,-4,0), new Vector3(0,0,0), 1.0f);
+            var ball = jsonLoader.LoadBall(Color.Yellow, new Vector3(0, -2, 0), new Vector3(0, 0, 0), 1.0f);
+            var floor = jsonLoader.LoadFloor(Color.SandyBrown, new Vector3(0, 0, 5.0f), new Vector3(0, -MathF.PI/2.0f, 0), 10.0f);
+            AddMesh(pin);
+            AddMesh(ball);
+            AddMesh(floor);
 
-            meshes.Add(pin);
-            points = pin.points;
-            triangles = pin.triangles;
-
-            foreach(var point in points)
-            {
-                viewPoints.Add(point.viewPoint);
-            }
-            foreach(var tri in triangles)
-            {
-                viewTriangles.Add(tri.GenerateViewTriangle());
-            }
-
+            InitializeViewEntities();
 
             UpdateWorldPositions();
             CalculateScreenPoints();
@@ -113,6 +112,17 @@ namespace CPUGraphicsEngine
             for (int i = 0; i < points.Count; i++)
             {
                 viewPoints[i].SetPosition( points[i].CalculateViewPositon(transformationMatrix));
+            }
+        }
+        public void InitializeViewEntities()
+        {
+            foreach (var point in points)
+            {
+                viewPoints.Add(point.viewPoint);
+            }
+            foreach (var tri in triangles)
+            {
+                viewTriangles.Add(tri.GenerateViewTriangle());
             }
         }
         public void UpdateViewPoints()
@@ -218,10 +228,17 @@ namespace CPUGraphicsEngine
             }
 
             depthBuffer[index] = z;
-
+            /*
             backBuffer[index4] = (byte)(color.B);
             backBuffer[index4 + 1] = (byte)(color.G);
             backBuffer[index4 + 2] = (byte)(color.R);
+            backBuffer[index4 + 3] = (byte)(color.A);*/
+
+
+            //at the moment pixel putting isnt optimised so i changed order to natural rgb:
+            backBuffer[index4] = (byte)(color.R);
+            backBuffer[index4 + 1] = (byte)(color.G);
+            backBuffer[index4 + 2] = (byte)(color.B);
             backBuffer[index4 + 3] = (byte)(color.A);
         }
         public void incAlpha()
@@ -245,8 +262,8 @@ namespace CPUGraphicsEngine
         public void Iterate(FastBitmap fastBitmap)
         {
             Clear(0, 0, 0, 1);
-            meshes[0].Move(0.05f, 0.0f, 0.0f);
-            meshes[0].Rotate(0.03f, 0.03f, 0.03f);
+            //meshes[0].Move(0.05f, 0.0f, 0.0f);
+            //meshes[0].Rotate(0.03f, 0.03f, 0.03f);
             //camera.Move(0f, 0, 0.1f);
             viewMatrix = camera.CreateViewMatrix();
             UpdateWorldPositions();
@@ -266,6 +283,13 @@ namespace CPUGraphicsEngine
         public void ChangeShading(ShadingMode shading)
         {
             shadingMode = shading;
+        }
+
+        public void AddMesh(Pin mesh)
+        {
+            meshes.Add(mesh);
+            points.AddRange(mesh.points);
+            triangles.AddRange(mesh.triangles);
         }
     }
 }

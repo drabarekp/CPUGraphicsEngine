@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
 using Hazdryx.Drawing;
 
+using CPUGraphicsEngine.Utils;
+
 namespace CPUGraphicsEngine.ViewEntities
 {
     internal class ViewTriangle
@@ -15,13 +17,14 @@ namespace CPUGraphicsEngine.ViewEntities
         ViewPoint p2;
         ViewPoint p3;
 
-        public BaseColor baseColor = new BaseColor(200, 200, 200, false);
+        public BaseColor baseColor;
 
-        public ViewTriangle(ViewPoint p1, ViewPoint p2, ViewPoint p3)
+        public ViewTriangle(ViewPoint p1, ViewPoint p2, ViewPoint p3, BaseColor baseColor)
         {
             this.p1 = p1;
             this.p2 = p2;
             this.p3 = p3;
+            this.baseColor = baseColor;
         }
 
         float Clamp(float value, float min = 0, float max = 1)
@@ -106,7 +109,7 @@ namespace CPUGraphicsEngine.ViewEntities
                 p1 = temp;
             }
 
-            Vector<float> normalFace = (p1.model.normal + p2.model.normal + p3.model.normal) / 3;
+            Vector<float> normalFace = (p1.model.worldNormal + p2.model.worldNormal + p3.model.worldNormal) / 3;
             Vector<float> centerPoint4 = (p1.model.worldPosition + p2.model.worldPosition + p3.model.worldPosition) / 3;
             Vector<float> centerPoint = Vector<float>.Build.DenseOfEnumerable(centerPoint4.Take(3));
             Vector<float> lightPosition = lights[0].position;
@@ -283,9 +286,9 @@ namespace CPUGraphicsEngine.ViewEntities
             float nl1 = ComputeNDotL(position1in3d, p1.model.normal, lightPosition);
             float nl2 = ComputeNDotL(position2in3d, p2.model.normal, lightPosition);
             float nl3 = ComputeNDotL(position3in3d, p3.model.normal, lightPosition);*/
-            float nl1 = PhongIntensity(position1in3d, p1.model.normal, presentation.camera.position, lights);
-            float nl2 = PhongIntensity(position2in3d, p2.model.normal, presentation.camera.position, lights);
-            float nl3 = PhongIntensity(position3in3d, p3.model.normal, presentation.camera.position, lights);
+            float nl1 = PhongIntensity(position1in3d, p1.model.worldNormal, presentation.camera.position, lights);
+            float nl2 = PhongIntensity(position2in3d, p2.model.worldNormal, presentation.camera.position, lights);
+            float nl3 = PhongIntensity(position3in3d, p3.model.worldNormal, presentation.camera.position, lights);
 
             //DEBUG
             if (nl1 != 0)
@@ -411,8 +414,8 @@ namespace CPUGraphicsEngine.ViewEntities
             if (sx < 0) sx = 0;
             if (ex >= presentation.width) ex = presentation.width;
 
-            var normalS = (1 - gradient1) * pa.model.normal + (gradient1) * pb.model.normal;
-            var normalE = (1 - gradient2) * pc.model.normal + (gradient2) * pd.model.normal;
+            var normalS = (1 - gradient1) * pa.model.worldNormal + (gradient1) * pb.model.worldNormal;
+            var normalE = (1 - gradient2) * pc.model.worldNormal + (gradient2) * pd.model.worldNormal;
 
             var positionS = (1 - gradient1) * pa.model.worldPosition + (gradient1) * pb.model.worldPosition;
             var positionE = (1 - gradient2) * pc.model.worldPosition + (gradient2) * pd.model.worldPosition;
@@ -550,7 +553,10 @@ namespace CPUGraphicsEngine.ViewEntities
 
                 Vector<float> R = 2 * lightDirection.DotProduct(normal) * normal - lightDirection;
                 R = R.Normalize(2);
-                sumIntensity += kd * lightDirection.DotProduct(normal) + ks*MathF.Pow(R.DotProduct(cameraDirection), alpha);
+                var localIntensity = kd * lightDirection.DotProduct(normal) + ks * MathF.Pow(R.DotProduct(cameraDirection), alpha);
+
+                if(localIntensity > 0)
+                    sumIntensity += localIntensity;
             }
 
             return Clamp(sumIntensity, 0, 1);

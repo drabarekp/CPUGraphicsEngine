@@ -8,46 +8,22 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 
 using CPUGraphicsEngine.Models;
+using CPUGraphicsEngine.Utils;
 
 namespace CPUGraphicsEngine
 {
-    public struct ScanLineData
-    {
-        public int currentY;
-        public float ndotla;
-        public float ndotlb;
-        public float ndotlc;
-        public float ndotld;
-    }
-    public struct Vector3
-    {
-        public Vector3(float x, float y, float z)
-        {
-            this.x = x;
-            this.y = y;
-            this.z = z;
-        }
-        public float x;
-        public float y;
-        public float z;
-
-        public static Vector3 Add(Vector3 v1, Vector3 v2)
-        {
-            return new Vector3(v1.x + v2.x, v1.y + v2.y, v1.z + v2.z);
-        }
-        public Vector3 Divide(float arg)
-        {
-            return new Vector3(x / arg, y / arg, z / arg);
-        }
-    }
-
     internal class JSONLoader
     {
-        public Pin LoadJSONFile()
+        string folderPath = "..\\..\\..\\..\\ModelsArchive\\";
+        string pinFilename = "veryLowPolyPin.babylon";
+        string ballFilename = "ball30.babylon";
+        string reflectorFilename;
+        string floorFilename = "plane30cube.babylon";
+
+        private Pin LoadJSONFile(string filename)
         {
             var meshes = new List<ModelTriangle>();
-            string filename;
-            var stream = File.OpenRead("pin-030.babylon");
+            var stream = File.OpenRead(filename);
             string jsonString = "";
             StreamReader reader = new StreamReader(stream);
             while (!reader.EndOfStream)
@@ -133,7 +109,7 @@ namespace CPUGraphicsEngine
                 }
                 vect = vect.Divide(normalsOfThePoint.Count);
                 item.Value.SetNormalVector(vect.x, vect.y, vect.z);
-                item.Value.normal = item.Value.normal.Normalize(2);
+                //item.Value.worldNormal = item.Value.worldNormal.Normalize(2);
                 pin.points.Add(item.Value);
             }
 
@@ -153,5 +129,41 @@ namespace CPUGraphicsEngine
             return pin;
             
         }
+
+        public Pin LoadPin(System.Drawing.Color color, Vector3 startPosition, Vector3 startRotation, float scale)
+        {
+            var pin =  LoadJSONFile(folderPath + pinFilename);
+            InitializeMesh(pin, color, startPosition, startRotation, scale);
+
+            return pin;
+        }
+
+        public Pin LoadBall(System.Drawing.Color color, Vector3 startPosition, Vector3 startRotation, float scale)
+        {
+            var ball = LoadJSONFile(folderPath + ballFilename);
+            InitializeMesh(ball, color, startPosition, startRotation, scale);
+
+            return ball;
+        }
+        public Pin LoadFloor(System.Drawing.Color color, Vector3 startPosition, Vector3 startRotation, float scale)
+        {
+            Pin floor = LoadJSONFile(folderPath + floorFilename);
+            foreach(var modelPoint in floor.points)
+            {
+                modelPoint.modelPosition[0] *=0.1f;
+            }
+            InitializeMesh(floor, color, startPosition, startRotation, scale);
+
+            return floor;
+        }
+
+        private void InitializeMesh(Pin mesh, System.Drawing.Color color, Vector3 startPosition, Vector3 startRotation, float scale)
+        {
+            mesh.SetColor(color);
+            mesh.Move(startPosition.x, startPosition.y, startPosition.z);
+            mesh.Rotate(startRotation.x, startRotation.y, startRotation.z);
+            mesh.scaleFactor = scale;
+        }
+
     }
 }

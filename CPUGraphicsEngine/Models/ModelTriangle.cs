@@ -14,6 +14,8 @@ namespace CPUGraphicsEngine.Models
         ModelPoint p2;
         ModelPoint p3;
 
+        BaseColor baseColor;
+
         public ModelTriangle(ModelPoint p1, ModelPoint p2, ModelPoint p3)
         {
             this.p1 = p1;
@@ -22,7 +24,12 @@ namespace CPUGraphicsEngine.Models
         }
         public ViewTriangle GenerateViewTriangle()
         {
-            return new ViewTriangle(p1.viewPoint, p2.viewPoint, p3.viewPoint);
+            return new ViewTriangle(p1.viewPoint, p2.viewPoint, p3.viewPoint, baseColor);
+        }
+
+        public void UpdateBaseColor(BaseColor baseColor)
+        {
+            this.baseColor = baseColor;
         }
     }
 }

@@ -16,7 +16,9 @@ namespace CPUGraphicsEngine.Models
         float xAngle = 0.0f;
         float yAngle = 0.0f;
         float zAngle = 0.0f;
-        float scaleFactor = 1.0f;
+        public float scaleFactor = 1.0f;
+
+        BaseColor basecolor;
 
         public Pin()
         {
@@ -97,6 +99,18 @@ namespace CPUGraphicsEngine.Models
             {
                 point.UpdateWorldPosition(modelMatrix);
             }
+        }
+
+        public void SetColor(System.Drawing.Color color)
+        {
+            basecolor = new BaseColor(color.R, color.G, color.B, true);
+            UpdateBaseColor();
+        }
+
+        public void UpdateBaseColor()
+        {
+            foreach(var modelTriangle in this.triangles)
+                modelTriangle.UpdateBaseColor(this.basecolor);
         }
 
     }

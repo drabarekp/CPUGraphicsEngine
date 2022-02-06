@@ -1,0 +1,11 @@
+{"producer":{"name":"Blender","version":"3.0.0","exporter_version":"2.93.5","file":"plane.babylon"},
+"autoClear":true,"clearColor":[0,0,0],"gravity":[0,-9.81,0],
+"materials":[{"name":"Light","id":"Light","customType":"BABYLON.PBRMaterial","emissive":[0.7595,0.8,0.6354],"roughness":0.2,"alpha":1,"transparencyMode":0,"alphaCutOff":0.4,"emissiveIntensity":15}],
+"meshes":[{"name":"Light1","id":"Light1","materialId":"Light","billboardMode":0,"position":[18.052,2.4753,-2.5972],"rotation":[0,0,-1.5775],"scaling":[2.7116,2.7116,2.7116],"isVisible":true,"isEnabled":true,"pickable":false
+,"positions":[1,0,-1,-1,0,1,-1,0,-1,1,0,1]
+,"normals":[0,1,0,0,1,0,0,1,0,0,1,0]
+,"indices":[0,1,2,0,3,1]
+,"subMeshes":[{"materialIndex":0,"verticesStart":0,"verticesCount":4,"indexStart":0,"indexCount":6}]
+,"instances":[]}
+]
+}

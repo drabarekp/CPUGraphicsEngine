@@ -15,18 +15,23 @@ namespace CPUGraphicsEngine
     public partial class Form1 : Form
     {
         Presentation presentation;
-        Bitmap bitmap = new Bitmap(800, 800);
-        FastBitmap fastBitmap = new FastBitmap(800, 800);
+        Bitmap bitmap;
+        FastBitmap fastBitmap;
         public Form1()
         {
+            int sizeX = 1200;
+            int sizeY = 800;
+
             InitializeComponent();
+            bitmap = new Bitmap(sizeX, sizeY);
+            fastBitmap = new FastBitmap(sizeX, sizeY);
             backgroundWorker1.WorkerReportsProgress = true;
             backgroundWorker1.WorkerSupportsCancellation = true;
 
             //var jReader = new JSONLoader();
             //jReader.LoadJSONFile();
 
-            presentation = new Presentation();
+            presentation = new Presentation(sizeX, sizeY);
 
             mainPicture.Image = Draw().BaseBitmap;
 

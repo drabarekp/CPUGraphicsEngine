@@ -32,7 +32,8 @@ namespace CPUGraphicsEngine.ViewEntities
         }
         public void UpdateScreenPosition(int width, int height)
         {
-            screenPosition = ((int)((width / 2) + (width / 2) * (position[0] / position[3])), (int)((height / 2) + (height / 2) * (position[1] / position[3])));
+            //screenPosition = ((int)((width / 2) + (width / 2) * (position[0] / position[3])), (int)((height / 2) + (height / 2) * (position[1] / position[3])));
+            screenPosition = ((int)((width / 2) + (height / 2) * (position[0] / position[3])), (int)((height / 2) + (height / 2) * (position[1] / position[3])));
         }
 
         public void SetPosition(Vector<float> position)

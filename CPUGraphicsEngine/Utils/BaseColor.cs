@@ -18,11 +18,11 @@ namespace CPUGraphicsEngine
         public int B { get => (int)(255 * b); }
         public int A { get => (int)(255); }
 
-        public BaseColor(float r, float g, float b)
+        public BaseColor(float rInDecimal, float gInDecimal, float bInDecimal)
         {
-            this.r = r;
-            this.g = g;
-            this.b = b;
+            this.r = rInDecimal;
+            this.g = gInDecimal;
+            this.b = bInDecimal;
         }
         public BaseColor(int R, int G, int B, bool integers)
         {
