@@ -29,13 +29,14 @@ namespace CPUGraphicsEngine
         public List<ViewPoint> viewPoints = new List<ViewPoint>();
         public List<ViewTriangle> viewTriangles = new List<ViewTriangle>();
 
-        public Camera camera;
-        List<LightSource> lights;
+        public Camera activeCamera;
 
-        float e = 1 / MathF.Tan(MathF.PI / 40.0f);
-        float n = 1;
-        float f = 100;
-        float a = 1;
+        private Camera staticBackCamera;
+        private Camera staticPinsCamera;
+        private Camera followingCamera;
+        private Camera movingCamera;
+
+        List<LightSource> lights;
 
         float alpha = 0;
 
@@ -50,11 +51,16 @@ namespace CPUGraphicsEngine
             height = sizeY;
 
             lights = new List<LightSource>();
-            lights.Add(new LightSource(10, 0, 0));
-            lights.Add(new LightSource(0, 0, -10));
-            lights.Add(new LightSource(10, -10, 10));
+            //lights.Add(new LightSource(new Vector3(5, -2, 0), new Vector3(-1, 0, 0), 0.95f));
+            lights.Add(new LightSource(0, 5, -1));
+            //lights.Add(new LightSource(10, -10, 10));
 
-            camera = new Camera((100, 0, 0), (0, 0, 0));
+            staticBackCamera = new Camera((100, 0, 0), (0, 0, 0), MathF.PI / 40.0f);
+            staticPinsCamera = new Camera((-10, -5, -5), (0, 0, 0), MathF.PI / 4.0f);
+            followingCamera = new Camera((-10, -5, -5), (0, 0, 0), MathF.PI / 4.0f);
+            movingCamera = new Camera((-10, -5, -5), (0, 0, 0), MathF.PI / 4.0f);
+
+            activeCamera = movingCamera;
 
             var M = Matrix<float>.Build;
             var V = Vector<float>.Build;
@@ -62,41 +68,19 @@ namespace CPUGraphicsEngine
             backBuffer = new byte[width * height * 4];
             depthBuffer = new float[width * height];
 
-            float[,] projectionArray =
-                {
-                {e, 0,0,0 },
-                {0, e/a, 0, 0 },
-                {0,0, -(f+n)/(f-n), -(2*f*n)/(f-n) },
-                {0,0,-1,0 }
-                };
-            projectionMatrix = M.DenseOfArray(projectionArray);
-
-            float[,] modelArray =
-            {
-                {MathF.Cos(alpha),-MathF.Sin(alpha), 0,0.1f },
-                {MathF.Sin(alpha), MathF.Cos(alpha), 0,0.2f },
-                {0,0,1,0.3f },
-                {0,0,0,1 }
-            };
-            modelMatrix = M.DenseOfArray(modelArray);
-
-            /*float[,] viewArray =
-            {
-                {-1,0, 0,0 },
-                {0,0,1,0 },
-                {0,1,0,-5},
-                {0,0,0,1 }
-            };
-            viewMatrix = M.DenseOfArray(viewArray);*/
-            viewMatrix = camera.CreateViewMatrix();
+            viewMatrix = activeCamera.CreateViewMatrix();
+            projectionMatrix = activeCamera.CreateProjectionMatrix();
 
             var jsonLoader = new JSONLoader();
             var pin = jsonLoader.LoadPin(Color.Red, new Vector3(0.5f,-4,0), new Vector3(0,0,0), 1.0f);
             var ball = jsonLoader.LoadBall(Color.Yellow, new Vector3(0, -2, 0), new Vector3(0, 0, 0), 1.0f);
-            var floor = jsonLoader.LoadFloor(Color.SandyBrown, new Vector3(0, 0, 5.0f), new Vector3(0, -MathF.PI/2.0f, 0), 10.0f);
-            AddMesh(pin);
+            var floor = jsonLoader.LoadFloor(Color.SandyBrown, new Vector3(0, 0, 15.0f), new Vector3(0, -MathF.PI/2.0f, 0), 5.0f);
+            var reflector = jsonLoader.LoadReflector(Color.LightGray, new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 0.0f), 1.0f);
+            
             AddMesh(ball);
-            AddMesh(floor);
+            AddMesh(pin);
+            //AddMesh(floor);
+            AddMesh(reflector);
 
             InitializeViewEntities();
 
@@ -127,7 +111,7 @@ namespace CPUGraphicsEngine
         }
         public void UpdateViewPoints()
         {
-            Matrix<float> transformationMatrix = projectionMatrix * viewMatrix * modelMatrix;
+            Matrix<float> transformationMatrix = projectionMatrix * viewMatrix;
             foreach (var p in points)
             {
                 p.UpdateViewPoint(transformationMatrix);
@@ -246,26 +230,18 @@ namespace CPUGraphicsEngine
             alpha += 0.1f;
             //lights[0].Move(-100, -100, 0);
         }
-        public void calcModelMatrix()
-        {
-            var M = Matrix<float>.Build;
-            float[,] modelArray =
-            {
-                {MathF.Cos(alpha),-MathF.Sin(alpha), 0,0.1f },
-                {MathF.Sin(alpha), MathF.Cos(alpha), 0,0.2f },
-                {0,0,1,0.3f },
-                {0,0,0,1 }
-            };
-            modelMatrix = M.DenseOfArray(modelArray);
-        }
 
         public void Iterate(FastBitmap fastBitmap)
         {
             Clear(0, 0, 0, 1);
-            //meshes[0].Move(0.05f, 0.0f, 0.0f);
-            //meshes[0].Rotate(0.03f, 0.03f, 0.03f);
+            //meshes[0].Move(0.04f, 0.04f, 0.00f);
+            meshes[2].Rotate(0.03f, 0.00f, 0.00f);
             //camera.Move(0f, 0, 0.1f);
-            viewMatrix = camera.CreateViewMatrix();
+            
+            UpdateCameras();
+            viewMatrix = activeCamera.CreateViewMatrix();
+            projectionMatrix = activeCamera.CreateProjectionMatrix();
+
             UpdateWorldPositions();
             UpdateViewPoints();
             UpdateScreenPosition();
@@ -290,6 +266,39 @@ namespace CPUGraphicsEngine
             meshes.Add(mesh);
             points.AddRange(mesh.points);
             triangles.AddRange(mesh.triangles);
+        }
+
+        public bool IsBehind(int x, int y, float z)
+        {
+            if (this.depthBuffer[x + y * width] <= z) return true;
+            return false;
+        }
+
+        public void ChangeCamera(CameraEnum cameraEnum)
+        {
+            switch (cameraEnum)
+            {
+                case CameraEnum.STATIC_BACK:
+                    activeCamera = staticBackCamera;
+                    break;
+                case CameraEnum.STATIC_PINS:
+                    activeCamera = staticPinsCamera;
+                    break;
+                case CameraEnum.FOLLOWING:
+                    activeCamera = followingCamera;
+                    break;
+                case CameraEnum.MOVING:
+                    activeCamera = movingCamera;
+                    break;
+                default:
+                    break;
+            }
+        }
+
+        private void UpdateCameras()
+        {
+            movingCamera.MoveBehindTarget(meshes[0]);
+            followingCamera.FollowTarget(meshes[0]);
         }
     }
 }

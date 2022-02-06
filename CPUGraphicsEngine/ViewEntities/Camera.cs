@@ -5,19 +5,29 @@ using System.Text;
 using System.Threading.Tasks;
 using MathNet.Numerics.LinearAlgebra;
 
+using CPUGraphicsEngine.Models;
+using CPUGraphicsEngine.Utils;
+
 namespace CPUGraphicsEngine.ViewEntities
 {
     internal class Camera
     {
-        float fov;
+        float e;
+        float n = 100;
+        float f = 1;
+        float a = 1;
+
         public Vector<float> position;
         Vector<float> target;
+        readonly Vector<float> distanceFromTarget;
 
-        public Camera((float X, float Y, float Z) position, (float X, float Y, float Z) target)
+        public Camera((float X, float Y, float Z) position, (float X, float Y, float Z) target, float fov)
         {
             var V = Vector<float>.Build;
             this.position = V.Dense(new float[] { position.X, position.Y, position.Z });
             this.target = V.Dense(new float[] { target.X, target.Y, target.Z });
+            distanceFromTarget = Vector<float>.Build.DenseOfArray(new float[] { 0.0000f, 0.0001f, 4 });
+            e = 1 / MathF.Tan(fov);
         }
         public Matrix<float> CreateViewMatrix()
         {
@@ -30,13 +40,27 @@ namespace CPUGraphicsEngine.ViewEntities
 
             float[,] viewArray =
             {
-                {xAxis[0], yAxis[0], zAxis[0], position[0] },
+                {xAxis[0], yAxis[0], zAxis[0], position[0] }, //nie mogą być same zera w zAxis
                 {xAxis[1], yAxis[1], zAxis[1], position[1]},
                 {xAxis[2], yAxis[2], zAxis[2], position[2]},
                 {0.0f, 0.0f, 0.0f, 1.0f }
             };
             return Matrix<float>.Build.DenseOfArray(viewArray).Inverse();
         }
+
+        public Matrix<float> CreateProjectionMatrix()
+        {
+            float[,] projectionArray =
+                {
+                {e, 0,0,0 },
+                {0, e/a, 0, 0 },
+                {0,0, -(f+n)/(f-n), -(2*f*n)/(f-n) },
+                {0,0,-1,0 }
+                };
+
+            return Matrix<float>.Build.DenseOfArray(projectionArray);
+        }
+
         private Vector<float> Cross(Vector<float> v1, Vector<float> v2)
         {
             return Vector<float>.Build.Dense(new float[] 
@@ -51,6 +75,24 @@ namespace CPUGraphicsEngine.ViewEntities
             position[0] += x;
             position[1] += y;
             position[2] += z;
+        }
+
+        public void SetTarget(float x, float y, float z)
+        {
+            target[0] = x;
+            target[1] = y;
+            target[2] = z;
+        }
+
+        public void FollowTarget(Pin mesh)
+        {
+            target = mesh.Position;
+        }
+
+        public void MoveBehindTarget(Pin target)
+        {
+            this.target = target.Position;
+            this.position = target.Position + distanceFromTarget;
         }
 
     }

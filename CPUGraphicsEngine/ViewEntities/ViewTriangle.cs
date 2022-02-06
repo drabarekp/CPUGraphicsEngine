@@ -115,7 +115,7 @@ namespace CPUGraphicsEngine.ViewEntities
             Vector<float> lightPosition = lights[0].position;
 
             //float ndotl = ComputeNDotL(centerPoint, normalFace, lightPosition);
-            float ndotl = PhongIntensity(centerPoint, normalFace, presentation.camera.position, lights);
+            float ndotl = PhongIntensity(centerPoint, normalFace, presentation.activeCamera.position, lights);
             var data = new ScanLineData { ndotla = ndotl };
 
             // inverse slopes
@@ -286,9 +286,9 @@ namespace CPUGraphicsEngine.ViewEntities
             float nl1 = ComputeNDotL(position1in3d, p1.model.normal, lightPosition);
             float nl2 = ComputeNDotL(position2in3d, p2.model.normal, lightPosition);
             float nl3 = ComputeNDotL(position3in3d, p3.model.normal, lightPosition);*/
-            float nl1 = PhongIntensity(position1in3d, p1.model.worldNormal, presentation.camera.position, lights);
-            float nl2 = PhongIntensity(position2in3d, p2.model.worldNormal, presentation.camera.position, lights);
-            float nl3 = PhongIntensity(position3in3d, p3.model.worldNormal, presentation.camera.position, lights);
+            float nl1 = PhongIntensity(position1in3d, p1.model.worldNormal, presentation.activeCamera.position, lights);
+            float nl2 = PhongIntensity(position2in3d, p2.model.worldNormal, presentation.activeCamera.position, lights);
+            float nl3 = PhongIntensity(position3in3d, p3.model.worldNormal, presentation.activeCamera.position, lights);
 
             //DEBUG
             if (nl1 != 0)
@@ -426,13 +426,15 @@ namespace CPUGraphicsEngine.ViewEntities
                 float gradient = (x - sx) / (float)(ex - sx);
 
                 var z = Interpolate(z1, z2, gradient);
+                if (presentation.IsBehind(x, y, z)) continue;
+
                 var normal = (1 - gradient) * normalS + gradient * normalE;
                 var position = (1 - gradient) * positionS + gradient * positionE;
 
                 position = Vector<float>.Build.DenseOfEnumerable(position.Take(3));
 
                 //var ndotl = ComputeNDotL(position, normal, lights[0].position);
-                var ndotl = PhongIntensity(position, normal, presentation.camera.position, lights);
+                var ndotl = PhongIntensity(position, normal, presentation.activeCamera.position, lights);
                 presentation.PutPixel(x, y, z, ndotl * color);
             }
         }
@@ -494,7 +496,7 @@ namespace CPUGraphicsEngine.ViewEntities
             // P3
             if (dP1P2 > dP1P3)
             {
-                for (var y = (int)p1.Y; y <= (int)p3.Y; y++)
+                /*for (var y = (int)p1.Y; y <= (int)p3.Y; y++)
                 {
 
                     if (y < p2.Y)
@@ -505,7 +507,19 @@ namespace CPUGraphicsEngine.ViewEntities
                     {
                         ProcessScanLinePhong(y, p1, p3, p2, p3, color, presentation, lights);
                     }
-                }
+                }*/
+
+                Parallel.For(p1.Y, p3.Y, (y) =>
+                {
+                    if (y < p2.Y)
+                    {
+                        ProcessScanLinePhong(y, p1, p3, p1, p2, color, presentation, lights);
+                    }
+                    else
+                    {
+                        ProcessScanLinePhong(y, p1, p3, p2, p3, color, presentation, lights);
+                    }
+                });
             }
             // First case where triangles are like that:
             //       P1
@@ -520,7 +534,7 @@ namespace CPUGraphicsEngine.ViewEntities
             //       P3
             else
             {
-                for (var y = (int)p1.Y; y <= (int)p3.Y; y++)
+                /*for (var y = (int)p1.Y; y <= (int)p3.Y; y++)
                 {
                     data.currentY = y;
                     if (y < p2.Y)
@@ -531,16 +545,29 @@ namespace CPUGraphicsEngine.ViewEntities
                     {
                         ProcessScanLinePhong(y, p2, p3, p1, p3, color, presentation, lights);
                     }
-                }
+                }*/
+                Parallel.For(p1.Y, p3.Y, (y) =>
+                {
+                    if (y < p2.Y)
+                    {
+                        ProcessScanLinePhong(y, p1, p2, p1, p3, color, presentation, lights);
+                    }
+                    else
+                    {
+                        ProcessScanLinePhong(y, p2, p3, p1, p3, color, presentation, lights);
+                    }
+                });
             }
         }
 
         private float PhongIntensity(Vector<float> pointPosition, Vector<float> normal, Vector<float> cameraPosition, List<LightSource> lights)
         {
             float kd = 0.5f;
-            float ks = 0.5f;
-            float sumIntensity = 0.0f;
+            float ks = 1 - kd;
+            float ambientIntensity = 0.10f;
+            float sumIntensity = ambientIntensity;
             int alpha = 16;
+            
 
             Vector<float> cameraDirection = cameraPosition - pointPosition;
             cameraDirection = cameraDirection.Normalize(2);
@@ -548,12 +575,20 @@ namespace CPUGraphicsEngine.ViewEntities
             //input vectors are unit vectors
             foreach (var light in lights)
             {
+                if (!light.IsBeingLit(pointPosition)) continue;
+
                 var lightDirection = light.position - pointPosition;
                 lightDirection = lightDirection.Normalize(2);
 
                 Vector<float> R = 2 * lightDirection.DotProduct(normal) * normal - lightDirection;
                 R = R.Normalize(2);
-                var localIntensity = kd * lightDirection.DotProduct(normal) + ks * MathF.Pow(R.DotProduct(cameraDirection), alpha);
+
+                var LdotN = lightDirection.DotProduct(normal);
+                var RdotCamera = R.DotProduct(cameraDirection);
+                //if(RdotCamera <= 0) RdotCamera = 0;
+                if (LdotN <= 0) continue;
+
+                var localIntensity = kd * LdotN + ks * MathF.Pow(RdotCamera, alpha);
 
                 if(localIntensity > 0)
                     sumIntensity += localIntensity;

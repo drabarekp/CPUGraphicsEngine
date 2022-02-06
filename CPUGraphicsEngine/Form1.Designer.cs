@@ -37,13 +37,19 @@
             this.PhongRadio = new System.Windows.Forms.RadioButton();
             this.gouraudRadio = new System.Windows.Forms.RadioButton();
             this.flatRadio = new System.Windows.Forms.RadioButton();
+            this.cameraGroup = new System.Windows.Forms.GroupBox();
+            this.movingCameraRadio = new System.Windows.Forms.RadioButton();
+            this.followingCameraRadio = new System.Windows.Forms.RadioButton();
+            this.staticCameraPinsRadio = new System.Windows.Forms.RadioButton();
+            this.staticCameraBackRadio = new System.Windows.Forms.RadioButton();
             ((System.ComponentModel.ISupportInitialize)(this.mainPicture)).BeginInit();
             this.shadingGroup.SuspendLayout();
+            this.cameraGroup.SuspendLayout();
             this.SuspendLayout();
             // 
             // mainPicture
             // 
-            this.mainPicture.Location = new System.Drawing.Point(0, 0);
+            this.mainPicture.Location = new System.Drawing.Point(12, 12);
             this.mainPicture.Name = "mainPicture";
             this.mainPicture.Size = new System.Drawing.Size(1211, 850);
             this.mainPicture.TabIndex = 0;
@@ -132,11 +138,73 @@
             this.flatRadio.UseVisualStyleBackColor = true;
             this.flatRadio.CheckedChanged += new System.EventHandler(this.flatRadio_CheckedChanged);
             // 
+            // cameraGroup
+            // 
+            this.cameraGroup.Controls.Add(this.movingCameraRadio);
+            this.cameraGroup.Controls.Add(this.followingCameraRadio);
+            this.cameraGroup.Controls.Add(this.staticCameraPinsRadio);
+            this.cameraGroup.Controls.Add(this.staticCameraBackRadio);
+            this.cameraGroup.Location = new System.Drawing.Point(1229, 577);
+            this.cameraGroup.Name = "cameraGroup";
+            this.cameraGroup.Size = new System.Drawing.Size(250, 160);
+            this.cameraGroup.TabIndex = 5;
+            this.cameraGroup.TabStop = false;
+            this.cameraGroup.Text = "Camera Selection";
+            // 
+            // movingCameraRadio
+            // 
+            this.movingCameraRadio.AutoSize = true;
+            this.movingCameraRadio.Location = new System.Drawing.Point(9, 116);
+            this.movingCameraRadio.Name = "movingCameraRadio";
+            this.movingCameraRadio.Size = new System.Drawing.Size(226, 24);
+            this.movingCameraRadio.TabIndex = 3;
+            this.movingCameraRadio.TabStop = true;
+            this.movingCameraRadio.Text = "Camera Moving After the Ball";
+            this.movingCameraRadio.UseVisualStyleBackColor = true;
+            this.movingCameraRadio.CheckedChanged += new System.EventHandler(this.movingCameraRadio_CheckedChanged);
+            // 
+            // followingCameraRadio
+            // 
+            this.followingCameraRadio.AutoSize = true;
+            this.followingCameraRadio.Location = new System.Drawing.Point(9, 86);
+            this.followingCameraRadio.Name = "followingCameraRadio";
+            this.followingCameraRadio.Size = new System.Drawing.Size(204, 24);
+            this.followingCameraRadio.TabIndex = 2;
+            this.followingCameraRadio.TabStop = true;
+            this.followingCameraRadio.Text = "Camera Following the Ball";
+            this.followingCameraRadio.UseVisualStyleBackColor = true;
+            this.followingCameraRadio.CheckedChanged += new System.EventHandler(this.followingCameraRadio_CheckedChanged);
+            // 
+            // staticCameraPinsRadio
+            // 
+            this.staticCameraPinsRadio.AutoSize = true;
+            this.staticCameraPinsRadio.Location = new System.Drawing.Point(9, 56);
+            this.staticCameraPinsRadio.Name = "staticCameraPinsRadio";
+            this.staticCameraPinsRadio.Size = new System.Drawing.Size(152, 24);
+            this.staticCameraPinsRadio.TabIndex = 1;
+            this.staticCameraPinsRadio.TabStop = true;
+            this.staticCameraPinsRadio.Text = "Static Camera Pins";
+            this.staticCameraPinsRadio.UseVisualStyleBackColor = true;
+            this.staticCameraPinsRadio.CheckedChanged += new System.EventHandler(this.staticCameraPinsRadio_CheckedChanged);
+            // 
+            // staticCameraBackRadio
+            // 
+            this.staticCameraBackRadio.AutoSize = true;
+            this.staticCameraBackRadio.Location = new System.Drawing.Point(9, 26);
+            this.staticCameraBackRadio.Name = "staticCameraBackRadio";
+            this.staticCameraBackRadio.Size = new System.Drawing.Size(157, 24);
+            this.staticCameraBackRadio.TabIndex = 0;
+            this.staticCameraBackRadio.TabStop = true;
+            this.staticCameraBackRadio.Text = "Static Camera Back";
+            this.staticCameraBackRadio.UseVisualStyleBackColor = true;
+            this.staticCameraBackRadio.CheckedChanged += new System.EventHandler(this.staticCameraBackRadio_CheckedChanged);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(1482, 953);
+            this.Controls.Add(this.cameraGroup);
             this.Controls.Add(this.shadingGroup);
             this.Controls.Add(this.cancelButton);
             this.Controls.Add(this.startButton);
@@ -147,6 +215,8 @@
             ((System.ComponentModel.ISupportInitialize)(this.mainPicture)).EndInit();
             this.shadingGroup.ResumeLayout(false);
             this.shadingGroup.PerformLayout();
+            this.cameraGroup.ResumeLayout(false);
+            this.cameraGroup.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -162,5 +232,10 @@
         private System.Windows.Forms.RadioButton PhongRadio;
         private System.Windows.Forms.RadioButton gouraudRadio;
         private System.Windows.Forms.RadioButton flatRadio;
+        private System.Windows.Forms.GroupBox cameraGroup;
+        private System.Windows.Forms.RadioButton staticCameraBackRadio;
+        private System.Windows.Forms.RadioButton staticCameraPinsRadio;
+        private System.Windows.Forms.RadioButton movingCameraRadio;
+        private System.Windows.Forms.RadioButton followingCameraRadio;
     }
 }

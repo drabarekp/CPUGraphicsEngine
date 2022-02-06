@@ -17,7 +17,7 @@ namespace CPUGraphicsEngine
         string folderPath = "..\\..\\..\\..\\ModelsArchive\\";
         string pinFilename = "veryLowPolyPin.babylon";
         string ballFilename = "ball30.babylon";
-        string reflectorFilename;
+        string reflectorFilename = "reflector.babylon";
         string floorFilename = "plane30cube.babylon";
 
         private Pin LoadJSONFile(string filename)
@@ -148,13 +148,21 @@ namespace CPUGraphicsEngine
         public Pin LoadFloor(System.Drawing.Color color, Vector3 startPosition, Vector3 startRotation, float scale)
         {
             Pin floor = LoadJSONFile(folderPath + floorFilename);
-            foreach(var modelPoint in floor.points)
+            /*foreach(var modelPoint in floor.points)
             {
                 modelPoint.modelPosition[0] *=0.1f;
-            }
+            }*/
             InitializeMesh(floor, color, startPosition, startRotation, scale);
 
             return floor;
+        }
+
+        public Pin LoadReflector(System.Drawing.Color color, Vector3 startPosition, Vector3 startRotation, float scale)
+        {
+            Pin reflector = LoadJSONFile(folderPath + reflectorFilename);
+            InitializeMesh(reflector, color, startPosition, startRotation, scale);
+
+            return reflector;
         }
 
         private void InitializeMesh(Pin mesh, System.Drawing.Color color, Vector3 startPosition, Vector3 startRotation, float scale)

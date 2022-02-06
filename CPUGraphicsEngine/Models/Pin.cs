@@ -20,6 +20,8 @@ namespace CPUGraphicsEngine.Models
 
         BaseColor basecolor;
 
+        public Vector<float> Position { get => position; }
+
         public Pin()
         {
             position = Vector<float>.Build.DenseOfArray(new float[3] { 0.0f, 0.0f, 0.0f });

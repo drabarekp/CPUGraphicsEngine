@@ -19,7 +19,7 @@ namespace CPUGraphicsEngine
         FastBitmap fastBitmap;
         public Form1()
         {
-            int sizeX = 1200;
+            int sizeX = 800;
             int sizeY = 800;
 
             InitializeComponent();
@@ -59,11 +59,12 @@ namespace CPUGraphicsEngine
 
         private void basicButton_Click(object sender, EventArgs e)
         {
-            presentation.incAlpha();
-            presentation.calcModelMatrix();
+            /*presentation.incAlpha();
             presentation.UpdateViewPoints();
             presentation.UpdateScreenPosition();
-            mainPicture.Image = Draw().BaseBitmap;
+            mainPicture.Image = Draw().BaseBitmap;*/
+            presentation.Iterate(fastBitmap);
+            mainPicture.Image = fastBitmap.BaseBitmap;
         }
 
         private void startButton_Click(object sender, EventArgs e)
@@ -88,7 +89,7 @@ namespace CPUGraphicsEngine
         {
             bool working = false;
             BackgroundWorker worker = sender as BackgroundWorker;
-            System.Timers.Timer timer = new System.Timers.Timer(50);
+            System.Timers.Timer timer = new System.Timers.Timer(30);
             //timer.Enabled = true;
             //timer.AutoReset = true;
             timer.Elapsed += (a, b) =>
@@ -151,6 +152,54 @@ namespace CPUGraphicsEngine
                 if (rb.Checked)
                 {
                     presentation.ChangeShading(Utils.ShadingMode.PhongShading);
+                }
+            }
+        }
+
+        private void staticCameraBackRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb != null)
+            {
+                if (rb.Checked)
+                {
+                    presentation.ChangeCamera(Utils.CameraEnum.STATIC_BACK);
+                }
+            }
+        }
+
+        private void staticCameraPinsRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb != null)
+            {
+                if (rb.Checked)
+                {
+                    presentation.ChangeCamera(Utils.CameraEnum.STATIC_PINS);
+                }
+            }
+        }
+
+        private void followingCameraRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb != null)
+            {
+                if (rb.Checked)
+                {
+                    presentation.ChangeCamera(Utils.CameraEnum.FOLLOWING);
+                }
+            }
+        }
+
+        private void movingCameraRadio_CheckedChanged(object sender, EventArgs e)
+        {
+            RadioButton rb = sender as RadioButton;
+            if (rb != null)
+            {
+                if (rb.Checked)
+                {
+                    presentation.ChangeCamera(Utils.CameraEnum.MOVING);
                 }
             }
         }
