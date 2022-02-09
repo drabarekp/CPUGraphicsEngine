@@ -9,16 +9,17 @@ using System.Text.Json.Serialization;
 
 using CPUGraphicsEngine.Models;
 using CPUGraphicsEngine.Utils;
+using MathNet.Numerics.LinearAlgebra;
 
 namespace CPUGraphicsEngine
 {
     internal class JSONLoader
     {
         string folderPath = "..\\..\\..\\..\\ModelsArchive\\";
-        string pinFilename = "veryLowPolyPin.babylon";
-        string ballFilename = "ball30.babylon";
+        string pinFilename = "Pin-030.babylon";
+        string ballFilename = "ball300.babylon";
         string reflectorFilename = "reflector.babylon";
-        string floorFilename = "plane30cube.babylon";
+        string floorFilename = "floor1000square-editmode.babylon";
 
         private Pin LoadJSONFile(string filename)
         {
@@ -152,6 +153,7 @@ namespace CPUGraphicsEngine
             {
                 modelPoint.modelPosition[0] *=0.1f;
             }*/
+            Floorify(floor);
             InitializeMesh(floor, color, startPosition, startRotation, scale);
 
             return floor;
@@ -171,6 +173,29 @@ namespace CPUGraphicsEngine
             mesh.Move(startPosition.x, startPosition.y, startPosition.z);
             mesh.Rotate(startRotation.x, startRotation.y, startRotation.z);
             mesh.scaleFactor = scale;
+        }
+
+        private void Floorify(Pin mesh)
+        {
+            Vector<float> upVector = Vector<float>.Build.DenseOfArray(new float[] { -1.0f, 0.0f, 0.0f });
+            mesh.triangles.RemoveAll((tri) =>
+            {
+                if (upVector.DotProduct(tri.ModelNormalVector()) > 0.99f) return false;
+                return true;
+            });
+            foreach(var point in mesh.points)
+            {
+                point.modelPosition[1] = 1.5f * point.modelPosition[1];
+            }
+
+            HashSet<ModelPoint> hashSet = new HashSet<ModelPoint>();
+            foreach(var tri in mesh.triangles)
+            {
+                hashSet.Add(tri.p1);
+                hashSet.Add(tri.p2);
+                hashSet.Add(tri.p3);
+            }
+            mesh.points.RemoveAll((p) => { return !hashSet.Contains(p); });
         }
 
     }

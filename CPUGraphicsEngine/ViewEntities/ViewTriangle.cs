@@ -32,6 +32,11 @@ namespace CPUGraphicsEngine.ViewEntities
             return Math.Max(min, Math.Min(value, max));
         }
 
+        public Vector<float> WorldNormalVector()
+        {
+            return (p1.model.worldNormal + p2.model.worldNormal + p3.model.worldNormal).SubVector(0, 3) / 3.0f;
+        }
+
         // Interpolating the value between 2 vertices 
         // min is the starting point, max the ending point
         // and gradient the % between the 2 points
@@ -79,12 +84,19 @@ namespace CPUGraphicsEngine.ViewEntities
                 {
                     ;
                 }
-                presentation.PutPixel(x, data.currentY, z, ndotl*color);
+                presentation.PutPixel(x, data.currentY, z, CalculateColor(color, ndotl, z));
             }
         }
 
         public void DrawTriangleFlat(BaseColor color, Presentation presentation, List<LightSource> lights)
         {
+            if(p1.Z <= 0) return;
+            Vector<float> normalFace = (p1.model.worldNormal + p2.model.worldNormal + p3.model.worldNormal) / 3;
+            Vector<float> centerPoint4 = (p1.model.worldPosition + p2.model.worldPosition + p3.model.worldPosition) / 3;
+            Vector<float> centerPoint = centerPoint4.SubVector(0, 3);
+
+            Vector<float> cameraDirection = presentation.activeCamera.position - centerPoint;
+
             // Sorting the points in order to always have this order on screen p1, p2 & p3
             // with p1 always up (thus having the Y the lowest possible to be near the top screen)
             // then p2 between p1 & p3
@@ -109,12 +121,9 @@ namespace CPUGraphicsEngine.ViewEntities
                 p1 = temp;
             }
 
-            Vector<float> normalFace = (p1.model.worldNormal + p2.model.worldNormal + p3.model.worldNormal) / 3;
-            Vector<float> centerPoint4 = (p1.model.worldPosition + p2.model.worldPosition + p3.model.worldPosition) / 3;
-            Vector<float> centerPoint = Vector<float>.Build.DenseOfEnumerable(centerPoint4.Take(3));
+            
             Vector<float> lightPosition = lights[0].position;
 
-            //float ndotl = ComputeNDotL(centerPoint, normalFace, lightPosition);
             float ndotl = PhongIntensity(centerPoint, normalFace, presentation.activeCamera.position, lights);
             var data = new ScanLineData { ndotla = ndotl };
 
@@ -189,15 +198,6 @@ namespace CPUGraphicsEngine.ViewEntities
                 }
             }
         }
-        float ComputeNDotL(Vector<float> pointPosition, Vector<float> faceNormal, Vector<float> lightPosition)
-        {
-            var lightDirection = lightPosition - pointPosition;
-
-            lightDirection = lightDirection.Normalize(2);
-
-            var dot = faceNormal.DotProduct(lightDirection);
-            return Math.Max(0, dot);
-        }
 
         void ProcessScanLineGouraud(ScanLineData data, ViewPoint pa, ViewPoint pb, ViewPoint pc, ViewPoint pd, BaseColor color, Presentation presentation)
         {
@@ -249,11 +249,13 @@ namespace CPUGraphicsEngine.ViewEntities
                     ;
                 }
 
-                presentation.PutPixel(x, data.currentY, z, ndotl * color);
+                presentation.PutPixel(x, data.currentY, z, CalculateColor(color, ndotl, z));
             }
         }
         public void DrawTriangleGouraud(BaseColor color, Presentation presentation, List<LightSource> lights)
         {
+            if (p1.Z <= 0) return;
+
             // Sorting the points in order to always have this order on screen p1, p2 & p3
             // with p1 always up (thus having the Y the lowest possible to be near the top screen)
             // then p2 between p1 & p3
@@ -435,11 +437,14 @@ namespace CPUGraphicsEngine.ViewEntities
 
                 //var ndotl = ComputeNDotL(position, normal, lights[0].position);
                 var ndotl = PhongIntensity(position, normal, presentation.activeCamera.position, lights);
-                presentation.PutPixel(x, y, z, ndotl * color);
+                
+                presentation.PutPixel(x, y, z, CalculateColor(color, ndotl, z));
             }
         }
         public void DrawTrianglePhong(BaseColor color, Presentation presentation, List<LightSource> lights)
         {
+            if (p1.Z <= 0) return;
+
             // Sorting the points in order to always have this order on screen p1, p2 & p3
             // with p1 always up (thus having the Y the lowest possible to be near the top screen)
             // then p2 between p1 & p3
@@ -596,5 +601,15 @@ namespace CPUGraphicsEngine.ViewEntities
 
             return Clamp(sumIntensity, 0, 1);
         }
+
+        private BaseColor CalculateColor(BaseColor baseColor, float intensity, float z)
+        {
+            //float intensityWithFog = AddFog(intensity, z);
+            BaseColor finalColor = intensity * baseColor;
+            finalColor.ApplyFog(z);
+            finalColor.Clamp();
+            return finalColor;
+        }
+
     }
 }

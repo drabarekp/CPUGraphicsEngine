@@ -46,5 +46,41 @@ namespace CPUGraphicsEngine.ViewEntities
             if (directionToPoint.DotProduct(direction) > beamAngleCosine) return true;
             return false;
         }
+
+        public void Rotate(float xAngle, float yAngle, float zAngle)
+        {
+
+            Vector<float> direction4 = Vector<float>.Build.Dense(new float[] { direction[0], direction[1], direction[2], 1.0f });
+            var M = Matrix<float>.Build;
+            float[,] rotationX = new float[4, 4]
+            {
+                {1.0f, 0.0f, 0.0f, 0.0f },
+                {0.0f, MathF.Cos(xAngle), -MathF.Sin(xAngle), 0.0f },
+                {0.0f, MathF.Sin(xAngle), MathF.Cos(xAngle), 0.0f },
+                {0.0f, 0.0f, 0.0f, 1.0f }
+            };
+
+            float[,] rotationY = new float[4, 4]
+            {
+                {MathF.Cos(yAngle), 0.0f, MathF.Sin(yAngle), 0.0f },
+                {0.0f, 1.0f, 0.0f, 0.0f },
+                {-MathF.Sin(yAngle), 0.0f, MathF.Cos(yAngle), 0.0f },
+                {0.0f, 0.0f, 0.0f, 1.0f }
+            };
+
+            float[,] rotationZ = new float[4, 4]
+            {
+                {MathF.Cos(zAngle), -MathF.Sin(zAngle), 0.0f, 0.0f },
+                {MathF.Sin(zAngle), MathF.Cos(zAngle), 0.0f, 0.0f },
+                {0.0f, 0.0f, 1.0f, 0.0f },
+                {0.0f, 0.0f, 0.0f, 1.0f }
+            };
+
+            var xRotationMatrix = M.DenseOfArray(rotationX);
+            var yRotationMatrix = M.DenseOfArray(rotationY);
+            var zRotationMatrix = M.DenseOfArray(rotationZ);
+
+            direction = (xRotationMatrix * yRotationMatrix * zRotationMatrix * direction4).SubVector(0, 3);
+        }
     }
 }

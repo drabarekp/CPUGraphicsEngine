@@ -34,11 +34,25 @@ namespace CPUGraphicsEngine.Models
             position[2] += z;
         }
 
+        public void SetPosition(float x, float y, float z)
+        {
+            position[0] = x;
+            position[1] = y;
+            position[2] = z;
+        }
+
         public void Rotate(float xAxisRotation, float yAxisRotation, float zAxisRotation)
         {
             xAngle += xAxisRotation;
             yAngle += yAxisRotation;
             zAngle += zAxisRotation;
+        }
+
+        public void SetRotationAngle(float xAxisRotation, float yAxisRotation, float zAxisRotation)
+        {
+            xAngle = xAxisRotation;
+            yAngle = yAxisRotation;
+            zAngle = zAxisRotation;
         }
 
         Matrix<float> GetModelMatrix()

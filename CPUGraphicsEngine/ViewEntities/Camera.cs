@@ -13,8 +13,8 @@ namespace CPUGraphicsEngine.ViewEntities
     internal class Camera
     {
         float e;
-        float n = 100;
-        float f = 1;
+        float n = 1;
+        float f = 10;
         float a = 1;
 
         public Vector<float> position;
@@ -26,7 +26,7 @@ namespace CPUGraphicsEngine.ViewEntities
             var V = Vector<float>.Build;
             this.position = V.Dense(new float[] { position.X, position.Y, position.Z });
             this.target = V.Dense(new float[] { target.X, target.Y, target.Z });
-            distanceFromTarget = Vector<float>.Build.DenseOfArray(new float[] { 0.0000f, 0.0001f, 4 });
+            distanceFromTarget = Vector<float>.Build.DenseOfArray(new float[] { 0.0000f, -2.0f, -4.0f });
             e = 1 / MathF.Tan(fov);
         }
         public Matrix<float> CreateViewMatrix()

@@ -40,5 +40,22 @@ namespace CPUGraphicsEngine
             var result = new BaseColor() { r = a * baseColor.r, g = a * baseColor.g, b = a * baseColor.b };
             return result;
         }
+
+        public void ApplyFog(float z)
+        {
+            if (z < 5) z = 0.0f;
+            else z = (z - 5.0f) / 25.0f;
+
+            r = r + (1.0f - r) * z;
+            g = g + (1.0f - g) * z;
+            b = b + (1.0f - b) * z;
+        }
+
+        public void Clamp()
+        {
+            if (r > 1.0f) r = 1.0f;
+            if (g > 1.0f) g = 1.0f;
+            if(b > 1.0f) b = 1.0f;
+        }
     }
 }

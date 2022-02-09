@@ -37,8 +37,9 @@ namespace CPUGraphicsEngine
         private Camera movingCamera;
 
         List<LightSource> lights;
+        Reflector reflector;
 
-        float alpha = 0;
+        float t = 0;
 
         byte[] backBuffer;
         float[] depthBuffer;
@@ -51,16 +52,17 @@ namespace CPUGraphicsEngine
             height = sizeY;
 
             lights = new List<LightSource>();
-            //lights.Add(new LightSource(new Vector3(5, -2, 0), new Vector3(-1, 0, 0), 0.95f));
+            lights.Add(new LightSource(new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, -1.0f, 0.0f), 0.80f));
             lights.Add(new LightSource(0, 5, -1));
-            //lights.Add(new LightSource(10, -10, 10));
+            lights.Add(new LightSource(10, -10, -10));
 
-            staticBackCamera = new Camera((100, 0, 0), (0, 0, 0), MathF.PI / 40.0f);
-            staticPinsCamera = new Camera((-10, -5, -5), (0, 0, 0), MathF.PI / 4.0f);
+
+            staticBackCamera = new Camera((10, 0, 0), (0, 0, 0), MathF.PI / 4.0f);
+            staticPinsCamera = new Camera((5.0f, 5.0f, -10.0f), (0.1f, 6.5f, 0.1f), MathF.PI / 3.0f);
             followingCamera = new Camera((-10, -5, -5), (0, 0, 0), MathF.PI / 4.0f);
             movingCamera = new Camera((-10, -5, -5), (0, 0, 0), MathF.PI / 4.0f);
 
-            activeCamera = movingCamera;
+            activeCamera = staticPinsCamera;
 
             var M = Matrix<float>.Build;
             var V = Vector<float>.Build;
@@ -72,22 +74,43 @@ namespace CPUGraphicsEngine
             projectionMatrix = activeCamera.CreateProjectionMatrix();
 
             var jsonLoader = new JSONLoader();
-            var pin = jsonLoader.LoadPin(Color.Red, new Vector3(0.5f,-4,0), new Vector3(0,0,0), 1.0f);
-            var ball = jsonLoader.LoadBall(Color.Yellow, new Vector3(0, -2, 0), new Vector3(0, 0, 0), 1.0f);
-            var floor = jsonLoader.LoadFloor(Color.SandyBrown, new Vector3(0, 0, 15.0f), new Vector3(0, -MathF.PI/2.0f, 0), 5.0f);
-            var reflector = jsonLoader.LoadReflector(Color.LightGray, new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 0.0f), 1.0f);
+            var pinModel1 = jsonLoader.LoadPin(Color.Red, new Vector3(0.0f,7.0f,0.5f), new Vector3(MathF.PI, 0,0), 1.0f);
+            var pinModel2 = jsonLoader.LoadPin(Color.Red, new Vector3(0.5f, 6.0f, 0.5f), new Vector3(MathF.PI, 0, 0), 1.0f);
+            var pinModel3 = jsonLoader.LoadPin(Color.Red, new Vector3(-0.5f, 6.0f, 0.5f), new Vector3(MathF.PI, 0, 0), 1.0f);
+            var ballModel = jsonLoader.LoadBall(Color.Yellow, new Vector3(0, -5.0f, -0.7f), new Vector3(0, 0, 0), 0.7f);
+            var floorModel = jsonLoader.LoadFloor(Color.SandyBrown, new Vector3(0, -3.0f, 6.0f), new Vector3(0, -MathF.PI/2.0f, 0), 6.0f);
+            var reflectorModel = jsonLoader.LoadReflector(Color.LightGray, new Vector3(0.0f, 0.0f, 0.0f), new Vector3(0.0f, 0.0f, 0.0f), 0.5f);
             
-            AddMesh(ball);
-            AddMesh(pin);
-            //AddMesh(floor);
-            AddMesh(reflector);
+            AddMesh(ballModel);
+            AddMesh(pinModel1);
+            AddMesh(pinModel2);
+            AddMesh(pinModel3);
+            AddMesh(reflectorModel);
+            AddMesh(floorModel);
+
+            reflector = new Reflector(lights[0], reflectorModel);
+            reflector.Move(new Vector3(-3.0f, 0.0f, -2.0f));
 
             InitializeViewEntities();
 
             UpdateWorldPositions();
             CalculateScreenPoints();
             UpdateScreenPosition();
-            Clear(0,0,0,1);
+            Clear(255,255,255,1);
+        }
+
+        public void Iterate(FastBitmap fastBitmap)
+        { 
+            SetModelsPositionAndIncrementTime();
+            UpdateCameras();
+
+            viewMatrix = activeCamera.CreateViewMatrix();
+            projectionMatrix = activeCamera.CreateProjectionMatrix();
+
+            UpdateWorldPositions();
+            UpdateViewPoints();
+            UpdateScreenPosition();
+            Render(fastBitmap);
         }
 
         public void CalculateScreenPoints()
@@ -147,7 +170,7 @@ namespace CPUGraphicsEngine
                     c = Color.FromArgb(backBuffer[4 * (x + y * width)], backBuffer[4 * (x + y * width) + 1], backBuffer[4 * (x + y * width) + 2]);
                     fastBitmap.Set(x, y, c); //todo optimisation of color
                 }
-            Clear(0, 0, 0, 1);
+            Clear(255, 255, 255, 1);
         }
 
         private void RenderTringlesFlat()
@@ -200,13 +223,15 @@ namespace CPUGraphicsEngine
         // Called to put a pixel on screen at a specific X,Y coordinates
         public void PutPixel(int x, int y, float z, BaseColor color)
         {
+            if (z < 0.0f) return; // Additional z checking
+
             // As we have a 1-D Array for our back buffer
             // we need to know the equivalent cell in 1-D based
             // on the 2D coordinates on screen
             var index = (x + y * width);
             var index4 = index * 4;
 
-            if (depthBuffer[index] < z)
+            if (depthBuffer[index] <= z)
             {
                 return; // Discard
             }
@@ -224,28 +249,6 @@ namespace CPUGraphicsEngine
             backBuffer[index4 + 1] = (byte)(color.G);
             backBuffer[index4 + 2] = (byte)(color.B);
             backBuffer[index4 + 3] = (byte)(color.A);
-        }
-        public void incAlpha()
-        {
-            alpha += 0.1f;
-            //lights[0].Move(-100, -100, 0);
-        }
-
-        public void Iterate(FastBitmap fastBitmap)
-        {
-            Clear(0, 0, 0, 1);
-            //meshes[0].Move(0.04f, 0.04f, 0.00f);
-            meshes[2].Rotate(0.03f, 0.00f, 0.00f);
-            //camera.Move(0f, 0, 0.1f);
-            
-            UpdateCameras();
-            viewMatrix = activeCamera.CreateViewMatrix();
-            projectionMatrix = activeCamera.CreateProjectionMatrix();
-
-            UpdateWorldPositions();
-            UpdateViewPoints();
-            UpdateScreenPosition();
-            Render(fastBitmap);
         }
 
         public void UpdateWorldPositions()
@@ -299,6 +302,36 @@ namespace CPUGraphicsEngine
         {
             movingCamera.MoveBehindTarget(meshes[0]);
             followingCamera.FollowTarget(meshes[0]);
+        }
+
+        private void SetModelsPositionAndIncrementTime()
+        {
+            if (t <= 21.0f)
+            {
+                meshes[0].SetPosition(0, -5.0f + t * 0.8f, -0.7f);
+                meshes[0].SetRotationAngle(0.3f * t, 0.0f, 0.0f);
+            }
+
+            reflector.Rotate(new Vector3(0.0f, 0.0f, 0.1f));
+            if(t % 16.0f <= 8.0f)
+                reflector.Move(new Vector3(0.1f, 0.1f, 0.0f));
+            else
+                reflector.Move(new Vector3(-0.1f, -0.1f, 0.0f));
+
+            float impactTime = 13.0f;
+            if(t >= impactTime && t <= impactTime + MathF.PI/2.0f)
+            {
+                float tFromImpact = t - impactTime;
+                meshes[1].SetPosition(0.5f, 6.0f, 0.5f - tFromImpact * 0.5f);
+                meshes[2].SetPosition(0.5f, 6.0f, 0.5f - tFromImpact * 0.5f);
+                meshes[3].SetPosition(0.5f, 6.0f, 0.5f - tFromImpact * 0.5f);
+                meshes[1].SetRotationAngle(MathF.PI + tFromImpact, 0.0f, 0.0f);
+                meshes[2].SetRotationAngle(MathF.PI + tFromImpact, -tFromImpact, 0.0f);
+                meshes[3].SetRotationAngle(MathF.PI + tFromImpact, tFromImpact, 0.0f);
+
+            }
+
+            t += 0.1f;
         }
     }
 }
